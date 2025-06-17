@@ -11,7 +11,7 @@ import Register from './pages/Register';
 import NotFound from './pages/NotFound';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
-import Header2 from './components/layout/Header2';
+import Header from './components/layout/Header';
 
 // import { useEffect } from 'react';
 
@@ -39,7 +39,7 @@ function AppLayout() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {!hideLayout && <Header2 />}
+      {!hideLayout && <Header />}
 
       <main className="flex-grow">
         <Routes>

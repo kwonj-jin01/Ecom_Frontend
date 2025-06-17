@@ -49,16 +49,17 @@ export default function CollectionSection() {
               key={index}
               className="bg-white rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-300 group"
             >
-              <img
-                src={item.image}
-                alt={item.label}
-                className="w-full h-[200px] object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="p-4">
-                <h3 className="text-xl font-semibold text-gray-800 text-center">
+              <div className="relative w-full h-[220px] overflow-hidden">
+                <img
+                  src={item.image}
+                  alt={item.label}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute bottom-4 left-4 text-white/90  px-3 py-1  text-lg font-semibold">
                   {item.label}
-                </h3>
+                </div>
               </div>
+
             </div>
           ))}
         </div>

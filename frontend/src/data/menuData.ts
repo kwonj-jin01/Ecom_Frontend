@@ -58,123 +58,62 @@ export const menuData: MenuData = {
     sections: [
       {
         title: "New & Trending",
-        items: ["New Arrivals", "Sale Offer", "Best Sellers", "Latest Drops"],
+        items: ["New Arrivals", "Sale Offer", "Best Sellers"],
       },
       {
         title: "Shoes",
-        items: ["Basketball", "Jordan", "Running", "Training & Gym"],
+        items: ["Basketball", "Running", "Training & Gym"],
       },
       {
         title: "Clothing",
-        items: [
-          "Hoodies & Sweatshirts",
-          "Jordan",
-          "Jackets & Vests",
-          "Tracksuits",
-          "24/7 Collection",
-          "Pants",
-          "Shorts",
-          "Tops & T-Shirts",
-        ],
+        items: ["Tracksuits", "Pants", "Shorts", "Tops & T-Shirts"],
       },
       {
         title: "Accessories",
-        items: [
-          "Bags & Backpacks",
-          "Hats & Headwear",
-          "Socks",
-          "Sunglasses",
-          "Belts",
-        ],
+        items: ["Socks", "Sunglasses"],
       },
       {
         title: "SHOP BY SPORT",
-        items: [
-          "Basketball",
-          "Cycling",
-          "Football",
-          "Running",
-          "Soccer",
-          "Tennis",
-        ],
+        items: ["Football", "Running", "Soccer", "Tennis"],
       },
       {
         title: "Shop By Color",
-        items: [
-          "Elemental Pink",
-          "University Red",
-          "Electric Blue",
-          "Mint Brown",
-          "Black And Sail",
-        ],
+        items: ["University Red", "Electric Blue", "Mint Brown"],
       },
     ],
     bottomLinks: [
-      "All Men's Shoes",
       "All Men's Clothing",
       "All Men's Accessories",
       "All Men's Sport",
-      "All Men's",
     ],
   },
   women: {
     sections: [
       {
         title: "New & Trending",
-        items: [
-          "New Arrivals",
-          "Sale Offer",
-          "Best Sellers",
-          "Latest Drops",
-          "New In Air Max",
-          "Shop Latest Sale Styles",
-        ],
+        items: ["New Arrivals", "Best Sellers"],
       },
       {
         title: "Shoes",
-        items: [
-          "Basketball",
-          "Lifestyle",
-          "Jordan",
-          "Retro Running",
-          "Running",
-          "Training & Gym",
-        ],
+        items: ["Basketball", "Jordan", "Training & Gym"],
       },
       {
         title: "Clothing",
         items: [
           "Hoodies & Sweatshirts",
           "Jordan",
-          "Jackets & Vests",
-          "Tracksuits",
-          "24/7 Collection",
-          "Pants",
-          "Shorts",
           "Tops & T-Shirts",
         ],
       },
       {
         title: "Accessories",
-        items: [
-          "Bags & Backpacks",
-          "Hats & Headwear",
-          "Socks",
-          "Sunglasses",
-          "Belts",
-        ],
+        items: ["Bags & Backpacks", "Hats & Headwear", "Socks"],
       },
       {
         title: "SHOP BY SPORT",
         items: [
           "Baseball",
-          "Basketball",
-          "Cycling",
-          "Football",
           "Running",
-          "Soccer",
-          "Tennis",
-          "Workout & Gym",
           "Yoga",
         ],
       },
@@ -183,8 +122,6 @@ export const menuData: MenuData = {
         items: [
           "Elemental Pink",
           "University Red",
-          "Electric Blue",
-          "Mint Brown",
           "Black And Sail",
         ],
       },
@@ -192,9 +129,7 @@ export const menuData: MenuData = {
     bottomLinks: [
       "All Women's Shoes",
       "All Women's Clothing",
-      "All Women's Accessories",
       "All Women's Sport",
-      "All Women's",
     ],
   },
   trending: {
