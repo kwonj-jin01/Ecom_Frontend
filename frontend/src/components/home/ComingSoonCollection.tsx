@@ -35,7 +35,7 @@ export default function ComingSoonCollection() {
   ];
 
   return (
-    <section className="py-10 bg-gray-100 px-4">
+    <section className="py-5 bg-gray-100 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between mb-12 gap-8">
           <div>
@@ -55,11 +55,14 @@ export default function ComingSoonCollection() {
           </div>
         </div>
 
-        <h4 className="uppercase text-sm font-bold text-gray-500 mb-4">
-          List Product.
-        </h4>
+        <div className="mb-3 flex items-center gap-4">
+          <h4 className="uppercase text-sm font-bold text-gray-500 whitespace-nowrap">
+            List Product.
+          </h4>
+          <div className="flex-1 h-1 bg-gray-200 rounded-full"></div>
+        </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-7">
           {products.map((item, index) => (
             <div key={index} className="flex items-center bg-gray-50 rounded-md overflow-hidden shadow hover:shadow-md transition">
               <img

@@ -1,6 +1,7 @@
 export interface Product {
   id: string;
   title: string;
+  name: string;
   description: string;
   price: number;
   discountPercentage?: number;
@@ -8,8 +9,16 @@ export interface Product {
   stock: number;
   brand: string;
   category: string;
+  sizes?: string[];
+  quantity?: number; // utilisé dans le panier
+
+  gender: "male" | "female" | "unisex";
   thumbnail: string;
+  image: string;
   images: string[];
+  colors: string[];
+  isNew?: boolean;
+  bestSeller?: boolean;
 }
 
 export interface Category {
@@ -30,19 +39,6 @@ export interface User {
   avatar?: string;
 }
 
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  gender: string;
-  image: string;
-  hoverImage?: string;
-  isNew?: boolean;
-  isBestSeller?: boolean;
-  colors: string[];
-}
-
 export interface CartItem extends Product {
   quantity: number;
   size: string;
@@ -56,4 +52,16 @@ export interface NavigationItem {
     href: string;
     featured?: boolean;
   }[];
+}
+
+export interface RegisterData {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface LoginData {
+  email: string;
+  password: string;
 }

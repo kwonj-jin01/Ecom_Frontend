@@ -4,7 +4,7 @@ import CollectionSection from '../components/home/CollectionSection';
 import ComingSoonCollection from '../components/home/ComingSoonCollection';
 import PromoSection from '../components/home/PromoSection';
 import ProductGrid from '../components/home/ProductGrid';
-import { products } from '../data/products';
+import { allProducts } from '../data/products';
 
 const Home: React.FC = () => {
   useEffect(() => {
@@ -14,10 +14,12 @@ const Home: React.FC = () => {
     // Scroll to top on page load
     window.scrollTo(0, 0);
   }, []);
-  const featuredProducts = products.filter(product => product.isNew || product.isBestSeller);
+  
+  const featuredProducts = allProducts.filter(product => product.isNew || product.bestSeller);
 
   return (
     <div>
+
       <Hero />
       <CollectionSection />
       <ProductGrid title="NEW ARRIVALS" products={featuredProducts} />

@@ -3,7 +3,7 @@ export default function CollectionSection() {
     {
       label: "Jacket",
       image:
-        "https://images.pexels.com/photos/2294361/pexels-photo-2294361.jpeg", // Remplace par l'URL de ton image
+        "https://images.pexels.com/photos/2294361/pexels-photo-2294361.jpeg", 
     },
     {
       label: "Short",
@@ -55,8 +55,8 @@ export default function CollectionSection() {
                   alt={item.label}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute bottom-4 left-4 text-white/90  px-3 py-1  text-lg font-semibold">
-                  {item.label}
+                <div className="absolute bottom-2 left-1 text-white/90 px-3 py-1 text-3xl font-semibold">
+                  {item.label}.
                 </div>
               </div>
 

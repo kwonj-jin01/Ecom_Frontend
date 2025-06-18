@@ -7,15 +7,16 @@ import ProductList from './pages/ProductList';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Login from './pages/Login';
-import Register from './pages/Register';
+// import Register from './pages/Register';
 import NotFound from './pages/NotFound';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import Header from './components/layout/Header';
+import { FavoriteProvider } from './context/FavoriteContext';
 
 // import { useEffect } from 'react';
 
-// function App() {
+// export default function App() {
 //   useEffect(() => {
 //     fetch('http://127.0.0.1:8000/api/test')
 //       .then(res => res.json())
@@ -47,9 +48,9 @@ function AppLayout() {
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/login" element={<Login />} />
+          {/* <Route path="/register" element={<Register />} /> */}
         </Routes>
       </main>
 
@@ -60,12 +61,14 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <CartProvider>
-          <AppLayout />
-        </CartProvider>
-      </AuthProvider>
-    </Router>
+    <CartProvider>
+      <FavoriteProvider>
+        <Router>
+          <AuthProvider>
+            <AppLayout />
+          </AuthProvider>
+        </Router>
+      </FavoriteProvider>
+    </CartProvider>
   );
 }

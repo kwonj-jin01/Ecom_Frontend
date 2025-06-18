@@ -1,32 +1,36 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Search,
+  Menu,
+  Heart,
+  ShoppingBag,
+  X,
+} from "lucide-react";
 import { Link } from 'react-router-dom';
-import { useCart } from '../../context/CartContext';
-import CartPreview from '../cart/CartPreview';
 import { menuData, type MenuData } from '../../data/menuData';
-import logoMain from '../../assets/fitix.png';
-import logoAlt from '../../assets/logo1.png';
-
-
+import CartPreview from '../cart/CartPreview';
+import { useCart } from '../../context/CartContext';
+import { useFavorites } from '../../context/FavoriteContext';
 
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const { cartCount, toggleCart } = useCart();
   const [activeMenu, setActiveMenu] = useState<keyof MenuData | null>(null);
+  const { favorites, toggleFavorite } = useFavorites();
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [showCart, setShowCart] = useState<boolean>(false);
 
+  // Use cart context instead of local state
+  const { getTotalCartItems } = useCart();
+
+  // Add scroll listener for header background change
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
     };
 
-    // Animation de chargement
-    setIsLoaded(true);
-
     window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleMouseEnter = (menuId: keyof MenuData) => {
@@ -41,196 +45,227 @@ const Header: React.FC = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isMobileMenuOpen && !(event.target as Element).closest('.mobile-menu')) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    if (isMobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMobileMenuOpen]);
+
+  // Close cart when mobile menu opens and vice versa
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      setShowCart(false);
+    }
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (showCart) {
+      setIsMobileMenuOpen(false);
+    }
+  }, [showCart]);
+
+  /** ---- Top banner ---- */
+  const WorkoutStore = () => (
+    <div className="bg-black text-white py-2 px-4 text-center">
+      <p className="text-sm">
+        Free shipping on orders over $75&nbsp;|&nbsp;30‑day returns
+      </p>
+    </div>
+  );
+
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${isScrolled ? 'bg-green-500 shadow-sm' : 'bg-white/80 backdrop-blur-sm'}`}>
-      <div className="container mx-auto">
-        {/* Navigation */}
-        <nav className={`flex items-center justify-between px-8 py-6 relative z-20 transition-all duration-700 ease-in-out ${isLoaded ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'}`}>
-          {/* Menu gauche */}
-          <div className="hidden md:flex items-center space-x-8">
-            {(['shop', 'men', 'women', 'trending'] as (keyof MenuData)[]).map((link) => (
-              <Link
-                key={link}
-                to={`/${link}`}
-                onMouseEnter={() => handleMouseEnter(link)}
-                className="text-sm font-medium text-gray-text hover:text-white transition-colors ${isScrolled ? 'bg-black shadow-sm' : 'bg-white/80 backdrop-blur-sm'}">
-                {link.toUpperCase()}
+    <>
+      <WorkoutStore />
+      {/* Header */}
+      <header className={`${isScrolled ? 'bg-white shadow-md' : 'bg-white'} shadow-sm border-b border-gray-100 sticky top-0 z-50 transition-all duration-300`}>
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-8">
+              <Link to="/" className="text-2xl font-bold">
+                <div className="text-black text-2xl font-bold">FITIX</div>
               </Link>
-            ))}
-          </div>
 
-          {/* Logo centré */}
-          <div className={`absolute left-1/2 transform -translate-x-1/2 transition-all duration-1000 ease-in-out ${isLoaded ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}`}>
-            <Link to="/">
-              <img
-                src={isScrolled ? logoAlt : logoMain}
-                alt="FITIX Logo"
-                className="h-20 object-contain" // ↔️ adapte la taille selon besoin
-              />
-            </Link>
-          </div>
-
-          {/* Menu de navigation droite */}
-          <div className="hidden md:flex items-center space-x-6">
-            {['seasonal', 'accessories'].map((link) => (
-              <a key={link} href={`/${link}`}
-                className="text-sm font-medium text-gray-text hover:text-white transition-colors">
-                {link.toUpperCase()}
-              </a>
-            ))}
-            <Link to="/login" className="bg-green-500 text-bl px-4 py-2 rounded-full text-sm hover:bg-white hover:text-black transition-colors">
-              SIGN IN/UP
-            </Link>
-            <button
-              onClick={toggleCart}
-              className={`w-8 h-8 bg-green-500 text-bl rounded-full flex items-center justify-center  text-sm font-bold cursor-pointer hover:bg-white hover:text-black transition-colors ${isScrolled ? 'none' : 'hidden'}`}
-              aria-label="Toggle cart"
-            >
-              {cartCount || 0}
-            </button>
-          </div>
-
-          {/* Bouton menu mobile */}
-          <div className="md:hidden flex items-center space-x-4">
-            <button
-              onClick={toggleCart}
-              className={`w-8 h-8 bg-green-500 text-bl rounded-full flex items-center justify-center  text-sm font-bold cursor-pointer hover:bg-gray-800 hover:text-white transition-colors ${isScrolled ? 'none' : 'hidden'}`}
-              aria-label="Toggle cart"
-            >
-              {cartCount || 0}
-            </button>
-            <button
-              onClick={toggleMobileMenu}
-              className={`w-8 h-8 flex flex-col items-center justify-center space-y-1 ${isScrolled ? 'none' : 'hidden'}`}
-              aria-label="Toggle mobile menu">
-
-              <span className={`w-6 h-0.5 bg-black transition-all ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-              <span className={`w-6 h-0.5 bg-black transition-all ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
-              <span className={`w-6 h-0.5 bg-black transition-all ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
-            </button>
-          </div>
-        </nav>
-      </div>
-
-      {/* Menu déroulant pour desktop */}
-      {activeMenu && (
-        <div
-          className={`absolute left-0 right-0 ${isScrolled ? 'bg-green-600' : 'bg-white'} shadow-lg z-10 transition-colors`}
-          onMouseEnter={() => setActiveMenu(activeMenu)}
-          onMouseLeave={handleMouseLeave}
-        >
-          <div className="container mx-auto px-8 py-6">
-            <div className="grid grid-cols-6 gap-8">
-              {menuData[activeMenu].sections.map((section, index) => (
-                <div key={index} className="space-y-4">
-                  <h3 className={`font-bold text-sm ${isScrolled ? 'text-white/70' : 'text-gray-900'}`}>
-                    {section.title}
-                  </h3>
-                  <ul className="space-y-2">
-                    {section.items.map((item, itemIndex) => (
-                      <li key={itemIndex}>
-                        <a
-                          href="#"
-                          className={`text-sm transition-colors duration-200 ${isScrolled
-                              ? 'text-white/60 hover:text-white'
-                              : 'text-gray-600 hover:text-green-600'
-                            }`}
-                        >
-                          {item}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+              <nav className="hidden md:flex items-center gap-8">
+                {(['shop', 'men', 'women', 'trending'] as (keyof MenuData)[]).map((link) => (
+                  <Link
+                    key={link}
+                    to={`/${link}`}
+                    onMouseEnter={() => handleMouseEnter(link)}
+                    className="text-gray-900 hover:text-black font-medium transition-colors capitalize"
+                  >
+                    {link}
+                  </Link>
+                ))}
+              </nav>
             </div>
 
-            {menuData[activeMenu].bottomLinks && (
-              <div className={`mt-8 pt-6 border-t ${isScrolled ? 'border-white/30' : 'border-gray-200'}`}>
-                <div className="flex space-x-6">
-                  {menuData[activeMenu].bottomLinks.map((link, index) => (
-                    <a
-                      key={index}
-                      href="#"
-                      className={`text-sm transition-colors duration-200 ${isScrolled
-                          ? 'text-white/60 hover:text-white'
-                          : 'text-gray-600 hover:text-green-600'
-                        }`}
-                    >
-                      {link}
-                    </a>
-                  ))}
-                </div>
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-2 w-64">
+                <Search className="w-4 h-4 text-gray-500 mr-2" />
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="bg-transparent outline-none flex-1 text-sm"
+                />
               </div>
-            )}
+
+              <Link
+                to="/login"
+                className="bg-green-500 text-white px-4 py-2 rounded-full text-sm hover:bg-green-600 transition-colors"
+              >
+                SIGN IN/UP
+              </Link>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => toggleFavorite("header-dummy-id")} // 🔧 ID factice ou réel
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
+                  <Heart className="w-5 h-5" />
+                  {favorites.size > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {favorites.size}
+                    </span>
+                  )}
+                </button>
+
+                <div className="relative">
+                  <button
+                    onClick={() => setShowCart(!showCart)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+                  >
+                    <ShoppingBag className="w-5 h-5" />
+                    {getTotalCartItems() > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {getTotalCartItems()}
+                      </span>
+                    )}
+                  </button>
+                  <CartPreview isOpen={showCart} onClose={() => setShowCart(false)} />
+                </div>
+
+                <button
+                  onClick={toggleMobileMenu}
+                  className="md:hidden p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <Menu className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      )}
 
-
-      {/* Menu mobile */}
-      {/* Overlay sombre */}
-      {isMobileMenuOpen && (
-        <div
-          onClick={toggleMobileMenu}
-          className="fixed inset-0 z-40 bg-black/40 md:hidden"
-        />
-      )}
-
-      {/* Panneau latéral */}
-      <div
-        className={`fixed inset-y-0 right-0 z-50 w-1/2 bg-white shadow-xl
-        transform transition-transform duration-300 md:hidden
-         ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
-      >
-        {/* Bouton de fermeture */}
-        <button
-          onClick={toggleMobileMenu}
-          aria-label="Close mobile menu"
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 focus:outline-none"
-        >
-          {/* un X simple */}
-          <svg viewBox="0 0 24 24" className="w-6 h-6">
-            <path
-              d="M6 6l12 12M6 18L18 6"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
-
-        {/* Liens de navigation */}
-        <nav className="flex flex-col mt-16 space-y-6 px-6 text-lg font-medium">
-          {['shop', 'men', 'women', 'trending', 'seasonal', 'accessories'].map(
-            (link) => (
-              <Link
-                key={link}
-                to={`/${link}`}
-                onClick={toggleMobileMenu}
-                className="capitalize hover:text-green-600 transition-colors"
-              >
-                {link}
-              </Link>
-            )
-          )}
-        </nav>
-
-        <div className="mt-8 px-6">
-          <Link
-            to="/register"
-            onClick={toggleMobileMenu}
-            className="block w-full bg-green-500   hover:text-white text-center px-4 py-3 rounded-full text-sm hover:bg-gray-800 transition-colors"
+        {/* Desktop dropdown menu */}
+        {activeMenu && (
+          <div
+            className="absolute left-0 right-0 bg-white shadow-lg z-10 transition-all duration-300"
+            onMouseEnter={() => setActiveMenu(activeMenu)}
+            onMouseLeave={handleMouseLeave}
           >
-            SIGN IN/UP
-          </Link>
+            <div className="container mx-auto px-8 py-6">
+              <div className="grid grid-cols-6 gap-8">
+                {menuData[activeMenu].sections.map((section, index) => (
+                  <div key={index} className="space-y-4">
+                    <h3 className="font-bold text-sm text-gray-900">
+                      {section.title}
+                    </h3>
+                    <ul className="space-y-2">
+                      {section.items.map((item, itemIndex) => (
+                        <li key={itemIndex}>
+                          <Link
+                            to="#"
+                            className="text-sm text-gray-600 hover:text-green-600 transition-colors duration-200"
+                          >
+                            {item}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+
+              {menuData[activeMenu].bottomLinks && (
+                <div className="mt-8 pt-6 border-t border-gray-200">
+                  <div className="flex space-x-6">
+                    {menuData[activeMenu].bottomLinks.map((link, index) => (
+                      <Link
+                        key={index}
+                        to="#"
+                        className="text-sm text-gray-600 hover:text-green-600 transition-colors duration-200"
+                      >
+                        {link}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Mobile side panel */}
+        <div
+          className={`mobile-menu fixed inset-y-0 right-0 z-50 w-80 bg-white shadow-xl transform transition-transform duration-300 md:hidden ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}
+        >
+          {/* Close button */}
+          <button
+            onClick={toggleMobileMenu}
+            aria-label="Close mobile menu"
+            className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {/* Navigation links */}
+          <nav className="flex flex-col mt-16 space-y-6 px-6 text-lg font-medium">
+            {['shop', 'men', 'women', 'trending', 'seasonal', 'accessories'].map(
+              (link) => (
+                <Link
+                  key={link}
+                  to={`/${link}`}
+                  onClick={toggleMobileMenu}
+                  className="capitalize hover:text-green-600 transition-colors py-2"
+                >
+                  {link}
+                </Link>
+              )
+            )}
+          </nav>
+
+          <div className="mt-8 px-6">
+            <Link
+              to="/login"
+              onClick={toggleMobileMenu}
+              className="block w-full bg-green-500 text-white text-center px-4 py-3 rounded-full text-sm hover:bg-green-600 transition-colors"
+            >
+              SIGN IN/UP
+            </Link>
+          </div>
         </div>
-      </div>
 
-
-      {/* Aperçu du panier */}
-      <CartPreview />
-    </header>
+        {/* Mobile menu overlay */}
+        {isMobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+            onClick={toggleMobileMenu}
+          />
+        )}
+      </header>
+    </>
   );
 };
 

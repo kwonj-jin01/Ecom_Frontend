@@ -19,7 +19,7 @@ export default function PromoSection() {
   ];
 
   return (
-    <section className="py-16 bg-white px-4">
+    <section className="py-8 bg-white px-4">
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-6">
         {promos.map((promo, index) => (
           <div

@@ -49,13 +49,15 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
 
         {/* Header */}
         <div className="mb-12">
-          <h1 className="italic text-2xl font-bold tracking-widest text-gray-800 uppercase">
-          </h1>
-          <h2 className="text-4xl font-bold text-black leading-tight">
-            <span className="italic text-black">
-              {title}
-            </span>
-          </h2>
+                   
+          <div className="mb-3 flex items-center gap-4">
+            <h2 className="text-4xl font-bold text-black leading-tight">
+              <span className="italic text-black">
+                {title}.
+              </span>
+            </h2>
+            <div className="w-full h-1 bg-green-500  rounded-full mt-5 mb-5"></div>
+          </div>
         </div>
 
 

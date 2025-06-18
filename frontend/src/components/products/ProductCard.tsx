@@ -1,93 +1,106 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Star, Heart, ShoppingCart } from 'lucide-react';
-import { useCart } from '../../context/CartContext';
-import { Product } from '../../types';
+import { Heart, Plus } from "lucide-react";
+import { Product } from "../../types";
 
 interface ProductCardProps {
-  product: Product;
+  product: Product & {
+    isOnSale?: boolean;
+    originalPrice?: number;
+    discount?: number;
+    promotion?: string | null;
+    inStock: boolean;
+    isNew?: boolean;
+    bestSeller?: boolean;
+  };
+  onToggleFavorite: (productId: string) => void;
+  onAddToCart: (product: Product) => void;
+  isFavorite: boolean;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { addItem } = useCart();
-  
-  const discountedPrice = product.discountPercentage
-    ? product.price * (1 - product.discountPercentage / 100)
-    : null;
-    
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
-  };
-
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  onToggleFavorite,
+  onAddToCart,
+  isFavorite,
+}) => {
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden group transition-all duration-300 hover:shadow-lg">
-      <div className="relative">
-        {product.discountPercentage && (
-          <div className="absolute top-2 left-2 bg-[#C0392B] text-white text-xs font-bold rounded-full px-2 py-1 z-10">
-            {Math.round(product.discountPercentage)}% OFF
+    <div className="group relative bg-transparent overflow-hidden transition-all duration-300">
+      <div className="relative aspect-square overflow-hidden rounded-2xl">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+
+        {/* Heart Icon */}
+        <button
+          onClick={() => onToggleFavorite(product.id)}
+          className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white transition-colors shadow-sm"
+        >
+          <Heart
+            className={`w-4 h-4 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+          />
+        </button>
+
+        {/* Out of Stock Overlay */}
+        {!product.inStock && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-2xl">
+            <span className="text-white font-semibold">Out of Stock</span>
           </div>
         )}
-        
-        <button 
-          aria-label="Add to favorites"
-          className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm p-2 rounded-full text-gray-600 hover:text-[#C0392B] transition-colors z-10"
-        >
-          <Heart className="h-5 w-5" />
-        </button>
-        
-        <Link to={`/products/${product.id}`} className="block relative overflow-hidden h-48">
-          <img
-            src={product.thumbnail}
-            alt={product.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          />
-          <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity"></div>
-        </Link>
-      </div>
-      
-      <div className="p-4">
-        <Link to={`/products/${product.id}`} className="block">
-          <h3 className="font-semibold text-gray-800 mb-1 line-clamp-1 hover:text-[#1A5276] transition-colors">
-            {product.title}
-          </h3>
-        </Link>
-        
-        <div className="flex items-center mb-2">
-          <div className="flex items-center text-[#F7B955]">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                size={16}
-                className={i < Math.floor(product.rating) ? 'fill-current' : 'stroke-current fill-none'}
-              />
-            ))}
+
+        {/* Info Gradient */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4 rounded-b-2xl">
+          <div className="text-white">
+            <p className="text-xs text-gray-300 mb-1">{product.category}</p>
+            <h3 className="font-medium text-sm mb-2 line-clamp-2">{product.name}</h3>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-white">${product.price.toFixed(2)}</span>
+                {product.isOnSale && product.originalPrice && product.originalPrice > product.price && (
+                  <span className="text-xs text-gray-300 line-through">
+                    ${product.originalPrice.toFixed(2)}
+                  </span>
+                )}
+              </div>
+
+              <button
+                onClick={() => onAddToCart(product)}
+                disabled={!product.inStock}
+                className={`p-2 rounded-full transition-colors ${
+                  product.inStock
+                    ? "bg-white text-black hover:bg-gray-100"
+                    : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-          <span className="text-xs text-gray-500 ml-1">({product.rating})</span>
         </div>
-        
-        <div className="flex items-baseline mb-3">
-          <span className="font-bold text-gray-800 text-lg">
-            {discountedPrice ? formatPrice(discountedPrice) : formatPrice(product.price)}
-          </span>
-          {discountedPrice && (
-            <span className="text-gray-500 text-sm line-through ml-2">
-              {formatPrice(product.price)}
-            </span>
+
+        {/* Badges (Sale, Promotion, New, Best Seller) */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1">
+          {product.isNew && (
+            <div className="bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded">
+              NEW
+            </div>
           )}
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-500">
-            {product.stock > 10 ? 'In Stock' : `Only ${product.stock} left`}
-          </span>
-          
-          <button
-            onClick={() => addItem(product, 1)}
-            className="bg-[#1A5276] hover:bg-[#154360] text-white p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1A5276]"
-            aria-label="Add to cart"
-          >
-            <ShoppingCart className="h-4 w-4" />
-          </button>
+          {product.bestSeller && (
+            <div className="bg-yellow-500 text-black text-xs font-semibold px-2 py-1 rounded">
+              Best Seller
+            </div>
+          )}
+          {product.promotion && (
+            <div className="bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
+              {product.promotion}
+            </div>
+          )}
+          {product.isOnSale && product.discount && product.discount > 0 && (
+            <div className="bg-black text-white text-xs font-semibold px-2 py-1 rounded">
+              -{product.discount}%
+            </div>
+          )}
         </div>
       </div>
     </div>

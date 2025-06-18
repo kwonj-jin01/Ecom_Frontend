@@ -1,138 +1,88 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '../types';
+import { createContext, useState, useEffect, ReactNode } from 'react';
+import { authAPI } from '../services/api';
+import { AxiosError } from 'axios';
 
-type AuthState = {
+export interface User { id: number; name: string; email: string; avatar?: string; }
+interface LoginCredentials { email: string; password: string; }
+interface RegisterData { name: string; email: string; password: string; password_confirmation: string; }
+
+export interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-};
+  login: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>;
+  register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  loading: boolean;
+}
 
-type AuthContextType = AuthState & {
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
-};
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+interface AuthProviderProps { children: ReactNode; }
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    isAuthenticated: false,
-    isLoading: true,
-  });
-
-  // Check for existing session on initial load
   useEffect(() => {
-    const checkAuth = () => {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        setAuthState({
-          user: JSON.parse(storedUser),
-          isAuthenticated: true,
-          isLoading: false,
-        });
-      } else {
-        setAuthState(prev => ({ ...prev, isLoading: false }));
-      }
-    };
-
-    checkAuth();
+    const token = localStorage.getItem('auth_token');
+    if (token) checkAuth();
+    else setLoading(false);
   }, []);
 
-  // Mock login function (would connect to backend in production)
-  const login = async (email: string, password: string) => {
-    // Simulate network request
-    setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+  const checkAuth = async () => {
     try {
-      // In a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (email && password) {
-        // Mock user for demo
-        const user: User = {
-          id: '1',
-          name: email.split('@')[0],
-          email,
-          avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-        };
-        
-        localStorage.setItem('user', JSON.stringify(user));
-        
-        setAuthState({
-          user,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-      } else {
-        throw new Error('Invalid credentials');
-      }
-    } catch (error) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-      throw error;
+      const response = await authAPI.getUser();
+      setUser(response.data);
+    } catch {
+      localStorage.removeItem('auth_token');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Mock register function
-  const register = async (name: string, email: string, password: string) => {
-    setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+  const login = async (credentials: LoginCredentials) => {
     try {
-      // In a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (name && email && password) {
-        // Mock registered user
-        const user: User = {
-          id: Date.now().toString(),
-          name,
-          email,
-          avatar: 'https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-        };
-        
-        localStorage.setItem('user', JSON.stringify(user));
-        
-        setAuthState({
-          user,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-      } else {
-        throw new Error('Please fill all required fields');
-      }
-    } catch (error) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-      throw error;
+      const res = await authAPI.login(credentials);
+      localStorage.setItem('auth_token', res.data.token);
+      setUser(res.data.user);
+      return { success: true };
+    } catch (error: unknown) {
+      const err = error as AxiosError<{ message: string }>;
+      return {
+        success: false,
+        error: err.response?.data?.message || 'Login failed',
+      };
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('user');
-    setAuthState({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false,
-    });
+  const register = async (data: RegisterData) => {
+    try {
+      const res = await authAPI.register(data);
+      localStorage.setItem('auth_token', res.data.token);
+      setUser(res.data.user);
+      return { success: true };
+    } catch (error: unknown) {
+      const err = error as AxiosError<{ message: string }>;
+      return {
+        success: false,
+        error: err.response?.data?.message || 'Registration failed',
+      };
+    }
   };
+
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      console.warn('Logout failed:', error);
+    } finally {
+      localStorage.removeItem('auth_token');
+      setUser(null);
+    }
+  };
+
 
   return (
-    <AuthContext.Provider
-      value={{
-        ...authState,
-        login,
-        register,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
