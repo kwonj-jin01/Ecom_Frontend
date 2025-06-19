@@ -16,7 +16,7 @@ const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<keyof MenuData | null>(null);
-  const { favorites, toggleFavorite } = useFavorites();
+  const { favorites } = useFavorites();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [showCart, setShowCart] = useState<boolean>(false);
 
@@ -88,7 +88,7 @@ const Header: React.FC = () => {
     <>
       <WorkoutStore />
       {/* Header */}
-      <header className={`${isScrolled ? 'bg-white shadow-md' : 'bg-white'} shadow-sm border-b border-gray-100 sticky top-0 z-50 transition-all duration-300`}>
+      <header className={`${isScrolled ? 'bg-green-500' : 'bg-white'} shadow-sm border-b border-gray-100 sticky top-0 z-50 transition-all duration-300`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-8">
@@ -124,15 +124,17 @@ const Header: React.FC = () => {
 
               <Link
                 to="/login"
-                className="bg-green-500 text-white px-4 py-2 rounded-full text-sm hover:bg-green-600 transition-colors"
+                className={`${isScrolled ? 'bg-white text-black' :  'bg-green-500 text-white' }  px-4 py-2 rounded-full text-sm hover:bg-green-600 transition-colors`}
               >
                 SIGN IN/UP
               </Link>
 
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => toggleFavorite("header-dummy-id")} // 🔧 ID factice ou réel
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+                  // optionnel : ajoute un lien si tu veux que ça mène à la page des favoris
+                  onClick={() => console.log("Aller à la page des favoris")} // ou un <Link> autour
+                >
                   <Heart className="w-5 h-5" />
                   {favorites.size > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -140,6 +142,7 @@ const Header: React.FC = () => {
                     </span>
                   )}
                 </button>
+
 
                 <div className="relative">
                   <button

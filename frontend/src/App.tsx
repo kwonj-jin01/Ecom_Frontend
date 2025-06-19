@@ -1,14 +1,12 @@
-// import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-// import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Home from './pages/Home';
 import ProductList from './pages/ProductList';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Login from './pages/Login';
-// import Register from './pages/Register';
 import NotFound from './pages/NotFound';
+// import Register from './pages/Register';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import Header from './components/layout/Header';
@@ -48,8 +46,8 @@ function AppLayout() {
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
+          {/* <Route path="/login" element={<Login />} /> */}
           <Route path="*" element={<NotFound />} />
-          <Route path="/login" element={<Login />} />
           {/* <Route path="/register" element={<Register />} /> */}
         </Routes>
       </main>
@@ -61,14 +59,14 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <CartProvider>
-      <FavoriteProvider>
-        <Router>
-          <AuthProvider>
+    <AuthProvider>
+      <CartProvider>
+        <FavoriteProvider>
+          <Router>
             <AppLayout />
-          </AuthProvider>
-        </Router>
-      </FavoriteProvider>
-    </CartProvider>
+          </Router>
+        </FavoriteProvider>
+      </CartProvider>
+    </AuthProvider>
   );
 }

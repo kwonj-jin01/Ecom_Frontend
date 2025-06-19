@@ -32,7 +32,7 @@ const Hero: React.FC = () => {
     }
   ];
   return (
-    <div className="mt-16">
+    <div >
       {/* Main Content */}
       <div className="relative px-6 md:px-8 pt-16 max-w-7xl mx-auto">
         {/* Hero Text */}

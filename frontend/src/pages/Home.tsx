@@ -9,7 +9,7 @@ import { allProducts } from '../data/products';
 const Home: React.FC = () => {
   useEffect(() => {
     // Update page title
-    document.title = 'Chance Baaba - Global B2B Marketplace';
+    document.title = 'FITIX - Global B2B Marketplace';
 
     // Scroll to top on page load
     window.scrollTo(0, 0);
@@ -20,8 +20,8 @@ const Home: React.FC = () => {
   return (
     <div>
 
-      <Hero />
-      <CollectionSection />
+      <Hero/>
+      <CollectionSection/>
       <ProductGrid title="NEW ARRIVALS" products={featuredProducts} />
       <ProductGrid title="BEST SELLERS" products={featuredProducts} />
       <ComingSoonCollection />

@@ -1,24 +1,30 @@
+// Types
 export interface Product {
   id: string;
   title: string;
   name: string;
   description: string;
   price: number;
-  discountPercentage?: number;
+  discountPercentage: number;
   rating: number;
   stock: number;
   brand: string;
   category: string;
-  sizes?: string[];
-  quantity?: number; // utilisé dans le panier
-
-  gender: "male" | "female" | "unisex";
+  gender: string;
   thumbnail: string;
   image: string;
+  hoverImage?: string;
   images: string[];
   colors: string[];
-  isNew?: boolean;
+  isNew: boolean;
+  isBestSeller?: boolean;
   bestSeller?: boolean;
+  inStock?: boolean;
+  isOnSale?: boolean;
+  originalPrice?: number;
+  discount?: number;
+  promotion?: string | null;
+  sizes?: string[]; // 👈 Ajout de cette ligne
 }
 
 export interface Category {
@@ -29,6 +35,7 @@ export interface Category {
 
 export interface CartItem {
   product: Product;
+  size: string;
   quantity: number;
 }
 
