@@ -1,67 +1,128 @@
-import { createContext, useState, useEffect, ReactNode } from 'react';
+// context/AuthContext.tsx
+import {
+  createContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from 'react';
 import { authAPI } from '../services/api';
 import { AxiosError } from 'axios';
 
-export interface User { id: number; name: string; email: string; avatar?: string; }
-interface LoginCredentials { email: string; password: string; }
-interface RegisterData { name: string; email: string; password: string; password_confirmation: string; }
+/* ───── Types ────────────────────────────────────────────── */
+export interface User {
+  id: string | number;
+  name: string;
+  email: string;
+  avatar?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+interface RegisterData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phone?: string;
+  country?: string;
+  sportType?: string;
+}
 
 export interface AuthContextType {
   user: User | null;
-  login: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>;
-  register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    credentials: LoginCredentials,
+  ) => Promise<{ success: boolean; error?: string }>;
+  register: (
+    data: RegisterData,
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   loading: boolean;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+/* ───── Constantes ───────────────────────────────────────── */
+const TOKEN_KEY = 'authToken';
 
-interface AuthProviderProps { children: ReactNode; }
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined,
+);
 
-export const AuthProvider = ({ children }: AuthProviderProps) => {
+/* ───── Provider ─────────────────────────────────────────── */
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (token) checkAuth();
-    else setLoading(false);
+  /* Helpers */
+  const clearSession = useCallback(() => {
+    localStorage.removeItem(TOKEN_KEY);
+    setUser(null);
   }, []);
 
-  const checkAuth = async () => {
+  const fetchUser = useCallback(async () => {
     try {
-      const response = await authAPI.getUser();
-      setUser(response.data);
+      const { data } = await authAPI.getUser(); // GET /user
+      setUser(data);
     } catch {
-      localStorage.removeItem('auth_token');
+      clearSession();
     } finally {
       setLoading(false);
     }
-  };
+  }, [clearSession]);
 
-  const login = async (credentials: LoginCredentials) => {
+  /* Bootstrapping (refresh / F5) */
+  useEffect(() => {
+    if (localStorage.getItem(TOKEN_KEY)) fetchUser();
+    else setLoading(false);
+  }, [fetchUser]);
+
+  /* Actions */
+  const login = async ({
+    email,
+    password,
+  }: LoginCredentials): Promise<{ success: boolean; error?: string }> => {
     try {
-      const res = await authAPI.login(credentials);
-      localStorage.setItem('auth_token', res.data.token);
-      setUser(res.data.user);
+      const { data } = await authAPI.login({ email, password });
+      localStorage.setItem(TOKEN_KEY, data.token);
+      setUser(data.user);
       return { success: true };
-    } catch (error: unknown) {
-      const err = error as AxiosError<{ message: string }>;
-      return {
-        success: false,
-        error: err.response?.data?.message || 'Login failed',
-      };
+    } catch (e) {
+      const err = e as AxiosError<{ message: string }>;
+      return { success: false, error: err.response?.data?.message || 'Login failed' };
     }
   };
 
-  const register = async (data: RegisterData) => {
+  /** ⚠️ Pas d’auto‑login après inscription : on laisse l’UI rediriger vers /login */
+  const register = async (
+    {
+      firstName,
+      lastName,
+      email,
+      password,
+      phone,
+      country,
+      sportType,
+    }: RegisterData,
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const res = await authAPI.register(data);
-      localStorage.setItem('auth_token', res.data.token);
-      setUser(res.data.user);
+      await authAPI.register({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        password,
+        password_confirmation: password,
+        phone,
+        country,
+        sport_type: sportType,
+      });
       return { success: true };
-    } catch (error: unknown) {
-      const err = error as AxiosError<{ message: string }>;
+    } catch (e) {
+      const err = e as AxiosError<{ message: string }>;
       return {
         success: false,
         error: err.response?.data?.message || 'Registration failed',
@@ -72,17 +133,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = async () => {
     try {
       await authAPI.logout();
-    } catch (error) {
-      console.warn('Logout failed:', error);
     } finally {
-      localStorage.removeItem('auth_token');
-      setUser(null);
+      clearSession();
     }
   };
 
-
+  /* Context value */
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider
+      value={{ user, login, register, logout, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,28 +1,24 @@
 import axios from "axios";
 import { LoginData, RegisterData } from "../types";
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL; // ex. http://127.0.0.1:8000/api
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
+  withCredentials: false, // Mets true si tu passes par cookies/Csrf
 });
 
-// Intercepteur pour ajouter le token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("auth_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Ajout automatique du Bearer
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("auth_token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
-// Intercepteur pour gérer les erreurs d'authentification
+// Déconnexion douce si 401
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -35,11 +31,10 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
-  register: (data: RegisterData) => api.post('/register', data),
-  login: (data: LoginData) => api.post('/login', data),
-  logout: () => api.post('/logout'),
-  getUser: () => api.get('/user'),
+  register: (data: RegisterData) => api.post("/register", data),
+  login: (data: LoginData) => api.post("/login", data),
+  logout: () => api.post("/logout"),
+  getUser: () => api.get("/user"),
 };
-
 
 export default api;

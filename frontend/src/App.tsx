@@ -2,8 +2,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Footer from './components/layout/Footer';
 import Home from './pages/Home';
 import ProductList from './pages/ProductList';
-import ProductDetail from './pages/ProductDetail';
-import Login from './pages/Login';
+// import ProductDetail from './pages/ProductDetail';
+import Login from './components/Auth/Login';
 import NotFound from './pages/NotFound';
 // import Register from './pages/Register';
 import { CartProvider } from './context/CartContext';

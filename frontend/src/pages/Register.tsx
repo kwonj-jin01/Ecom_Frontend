@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import Login from './Login';
+import Login from '../components/Auth/Login';
 import { useAuth } from '../context/AuthContext';
 
 const Register: React.FC = () => {

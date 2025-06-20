@@ -5,20 +5,29 @@ import {
   Heart,
   ShoppingBag,
   X,
+  User,
+  Settings,
+  LogOut,
+  ChevronDown,
 } from "lucide-react";
 import { Link } from 'react-router-dom';
 import { menuData, type MenuData } from '../../data/menuData';
 import CartPreview from '../cart/CartPreview';
 import { useCart } from '../../context/CartContext';
 import { useFavorites } from '../../context/FavoriteContext';
+import { useAuth } from '../../hook/useAuth';
 
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<keyof MenuData | null>(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const { favorites } = useFavorites();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [showCart, setShowCart] = useState<boolean>(false);
+
+  // Utilise le contexte d'authentification
+  const { user, isAuthenticated, logout } = useAuth();
 
   // Use cart context instead of local state
   const { getTotalCartItems } = useCart();
@@ -45,35 +54,56 @@ const Header: React.FC = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const toggleUserMenu = () => {
+    setShowUserMenu(!showUserMenu);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setShowUserMenu(false);
+  };
+
   // Close mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (isMobileMenuOpen && !(event.target as Element).closest('.mobile-menu')) {
         setIsMobileMenuOpen(false);
       }
+      if (showUserMenu && !(event.target as Element).closest('.user-menu-container')) {
+        setShowUserMenu(false);
+      }
     };
 
-    if (isMobileMenuOpen) {
+    if (isMobileMenuOpen || showUserMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isMobileMenuOpen]);
+  }, [isMobileMenuOpen, showUserMenu]);
 
   // Close cart when mobile menu opens and vice versa
   useEffect(() => {
     if (isMobileMenuOpen) {
       setShowCart(false);
+      setShowUserMenu(false);
     }
   }, [isMobileMenuOpen]);
 
   useEffect(() => {
     if (showCart) {
       setIsMobileMenuOpen(false);
+      setShowUserMenu(false);
     }
   }, [showCart]);
+
+  useEffect(() => {
+    if (showUserMenu) {
+      setShowCart(false);
+      setIsMobileMenuOpen(false);
+    }
+  }, [showUserMenu]);
 
   /** ---- Top banner ---- */
   const WorkoutStore = () => (
@@ -122,18 +152,117 @@ const Header: React.FC = () => {
                 />
               </div>
 
-              <Link
-                to="/login"
-                className={`${isScrolled ? 'bg-white text-black' :  'bg-green-500 text-white' }  px-4 py-2 rounded-full text-sm hover:bg-green-600 transition-colors`}
-              >
-                SIGN IN/UP
-              </Link>
+              {/* Bouton Sign In/Up ou Menu Utilisateur */}
+              {!isAuthenticated ? (
+                <Link
+                  to="/login"
+                  className={`${isScrolled ? 'bg-white text-black' : 'bg-green-500 text-white'} px-4 py-2 rounded-full text-sm hover:bg-green-600 transition-colors`}
+                >
+                  SIGN IN/UP
+                </Link>
+              ) : (
+                <div className="relative user-menu-container">
+                  <button
+                    onClick={toggleUserMenu}
+                    className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center overflow-hidden">
+                      {user?.avatar ? (
+                        <img
+                          src={user.avatar}
+                          alt="User avatar"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-4 h-4 text-white" />
+                      )}
+                    </div>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Menu déroulant utilisateur */}
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                      {/* Informations utilisateur */}
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center overflow-hidden">
+                            {user?.avatar ? (
+                              <img
+                                src={user.avatar}
+                                alt="User avatar"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <User className="w-5 h-5 text-white" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {user?.name}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">
+                              {user?.email}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Menu items */}
+                      <div className="py-1">
+                        <Link
+                          to="/profile"
+                          onClick={() => setShowUserMenu(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <User className="w-4 h-4" />
+                          Mon Profil
+                        </Link>
+                        <Link
+                          to="/orders"
+                          onClick={() => setShowUserMenu(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <ShoppingBag className="w-4 h-4" />
+                          Mes Commandes
+                        </Link>
+                        <Link
+                          to="/favorites"
+                          onClick={() => setShowUserMenu(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <Heart className="w-4 h-4" />
+                          Mes Favoris
+                        </Link>
+                        <Link
+                          to="/settings"
+                          onClick={() => setShowUserMenu(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <Settings className="w-4 h-4" />
+                          Paramètres
+                        </Link>
+                      </div>
+
+                      {/* Déconnexion */}
+                      <div className="border-t border-gray-100 py-1">
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Déconnexion
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex items-center gap-3">
                 <button
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
-                  // optionnel : ajoute un lien si tu veux que ça mène à la page des favoris
-                  onClick={() => console.log("Aller à la page des favoris")} // ou un <Link> autour
+                  onClick={() => console.log("Aller à la page des favoris")}
                 >
                   <Heart className="w-5 h-5" />
                   {favorites.size > 0 && (
@@ -142,7 +271,6 @@ const Header: React.FC = () => {
                     </span>
                   )}
                 </button>
-
 
                 <div className="relative">
                   <button
@@ -233,8 +361,35 @@ const Header: React.FC = () => {
             <X className="w-6 h-6" />
           </button>
 
+          {/* User info for mobile */}
+          {isAuthenticated && user && (
+            <div className="px-6 py-4 border-b border-gray-200 mt-12">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center overflow-hidden">
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt="User avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-6 h-6 text-white" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Navigation links */}
-          <nav className="flex flex-col mt-16 space-y-6 px-6 text-lg font-medium">
+          <nav className="flex flex-col mt-4 space-y-1 px-6 text-lg font-medium">
             {['shop', 'men', 'women', 'trending', 'seasonal', 'accessories'].map(
               (link) => (
                 <Link
@@ -247,17 +402,68 @@ const Header: React.FC = () => {
                 </Link>
               )
             )}
+
+            {/* Mobile user menu items */}
+            {isAuthenticated && (
+              <>
+                <div className="border-t border-gray-200 my-4"></div>
+                <Link
+                  to="/profile"
+                  onClick={toggleMobileMenu}
+                  className="flex items-center gap-3 py-2 hover:text-green-600 transition-colors"
+                >
+                  <User className="w-5 h-5" />
+                  Mon Profil
+                </Link>
+                <Link
+                  to="/orders"
+                  onClick={toggleMobileMenu}
+                  className="flex items-center gap-3 py-2 hover:text-green-600 transition-colors"
+                >
+                  <ShoppingBag className="w-5 h-5" />
+                  Mes Commandes
+                </Link>
+                <Link
+                  to="/favorites"
+                  onClick={toggleMobileMenu}
+                  className="flex items-center gap-3 py-2 hover:text-green-600 transition-colors"
+                >
+                  <Heart className="w-5 h-5" />
+                  Mes Favoris
+                </Link>
+                <Link
+                  to="/settings"
+                  onClick={toggleMobileMenu}
+                  className="flex items-center gap-3 py-2 hover:text-green-600 transition-colors"
+                >
+                  <Settings className="w-5 h-5" />
+                  Paramètres
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    toggleMobileMenu();
+                  }}
+                  className="flex items-center gap-3 py-2 text-red-600 hover:text-red-700 transition-colors"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Déconnexion
+                </button>
+              </>
+            )}
           </nav>
 
-          <div className="mt-8 px-6">
-            <Link
-              to="/login"
-              onClick={toggleMobileMenu}
-              className="block w-full bg-green-500 text-white text-center px-4 py-3 rounded-full text-sm hover:bg-green-600 transition-colors"
-            >
-              SIGN IN/UP
-            </Link>
-          </div>
+          {!isAuthenticated && (
+            <div className="mt-8 px-6">
+              <Link
+                to="/login"
+                onClick={toggleMobileMenu}
+                className="block w-full bg-green-500 text-white text-center px-4 py-3 rounded-full text-sm hover:bg-green-600 transition-colors"
+              >
+                SIGN IN/UP
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Mobile menu overlay */}

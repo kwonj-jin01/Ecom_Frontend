@@ -62,10 +62,14 @@ export interface NavigationItem {
 }
 
 export interface RegisterData {
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   password: string;
   password_confirmation: string;
+  phone?: string;
+  country?: string;
+  sport_type?: string;
 }
 
 export interface LoginData {

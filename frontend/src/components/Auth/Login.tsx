@@ -1,106 +1,171 @@
-// src/components/Auth/Login.jsx
-
-import React, { useState } from 'react';
+// Login.tsx
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hook/useAuth';
-import { useNavigate, Link } from 'react-router-dom';
-import GoogleLogin from './GoogleLogin';
+import { navigate } from '../../utils/navigation';
+import { Logo } from '../ui/Logo';
+import { LoginForm } from '../ui/LoginForm';
+import { RegisterForm } from '../ui/RegisterForm';
+import { SocialLogin } from '../ui/SocialLogin';
+import { AuthToggle } from '../ui/AuthToggle';
+import { HeroSection } from '../ui/HeroSection';
+import type { RegisterFormData } from '../../types/auth';
+import { AlertMessage } from '../ui/AlertMessage';
 
-const Login = () => {
-  const [formData, setFormData] = useState({
+const Login: React.FC = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState<RegisterFormData>({
     email: '',
     password: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    confirmPassword: '',
+    country: '',
+    sportType: '',
+    agreeTerms: false,
+    newsletter: false
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const handleChange = (e) => {
+  const { login, register, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    document.title = isLogin ? 'Login - FITIX' : 'Register - FITIX';
+
+    // If user is already authenticated, redirect to home
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isLogin, isAuthenticated]);
+
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        await login(formData.email, formData.password);
+        setSuccessMessage('Connexion réussie !');
+        setTimeout(() => navigate('/'), 1000); // Redirige après 1s
+      } else {
+        if (!formData.firstName.trim() || !formData.lastName.trim()) {
+          throw new Error('First name and last name are required');
+        }
+        if (!formData.agreeTerms) {
+          throw new Error('You must agree to the terms of service');
+        }
+        const success = await register(
+          formData.firstName,
+          formData.lastName,
+          formData.email,
+          formData.password,
+          formData.phone,
+          formData.country,
+          formData.sportType
+        );
+
+        if (success) {
+          setSuccessMessage('Account created successfully. You can now log in.');
+          setTimeout(() => {
+            setSuccessMessage('');
+            setIsLogin(true); // Bascule vers le mode login
+          }, 2000);
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    setError('');
+    // Reset form data when switching modes
     setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+      email: '',
+      password: '',
+      firstName: '',
+      lastName: '',
+      phone: '',
+      confirmPassword: '',
+      country: '',
+      sportType: '',
+      agreeTerms: false,
+      newsletter: false
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    const result = await login(formData);
-    
-    if (result.success) {
-      navigate('/dashboard');
-    } else {
-      setError(result.error);
-    }
-    
-    setLoading(false);
+  const togglePassword = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Connexion à votre compte
-          </h2>
-        </div>
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
-          
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <input
-                name="email"
-                type="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Adresse email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <input
-                name="password"
-                type="password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Mot de passe"
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </div>
+    <div className="min-h-screen bg-black flex">
+      {/* Left Side - Login Form */}
+      <div className="w-full lg:w-1/2 bg-black flex items-center justify-center p-8">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="mb-12">
+            <Logo />
           </div>
 
+          {/* Form Header */}
           <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            >
-              {loading ? 'Connexion...' : 'Se connecter'}
-            </button>
-          </div>
+            <h2 className="text-3xl font-bold text-white mb-2">
+              {isLogin ? 'Welcome back' : 'Create an account'}
+            </h2>
+            <p className="text-gray-400 mb-8">
+              {isLogin
+                ? 'Sign in to access your account'
+                : 'Join FITIX to start your fitness journey'}
+            </p>
 
-          <div className="mt-6">
-            <GoogleLogin />
-          </div>
+            {/* Error Box */}
+            <AlertMessage message={error} type="error" />
+            {successMessage && <AlertMessage message={successMessage} type="success" />}
 
-          <div className="text-center">
-            <Link to="/register" className="text-indigo-600 hover:text-indigo-500">
-              Pas encore de compte ? S'inscrire
-            </Link>
+            {/* Form */}
+            {isLogin ? (
+              <LoginForm
+                formData={formData}
+                showPassword={showPassword}
+                loading={loading}
+                onInputChange={handleInputChange}
+                onTogglePassword={togglePassword}
+                onSubmit={handleSubmit}
+              />
+            ) : (
+              <RegisterForm
+                formData={formData}
+                showPassword={showPassword}
+                loading={loading}
+                onInputChange={handleInputChange}
+                onTogglePassword={togglePassword}
+                onSubmit={handleSubmit}
+              />
+            )}
+
+            {/* Social Login */}
+            <SocialLogin />
+
+            {/* Toggle Mode Link */}
+            <AuthToggle isLogin={isLogin} onToggle={toggleMode} />
           </div>
-        </form>
+        </div>
       </div>
+
+      {/* Right Side - Hero Section */}
+      <HeroSection />
     </div>
   );
 };
