@@ -12,7 +12,6 @@ import Header from './components/layout/Header';
 import { FavoriteProvider } from './context/FavoriteContext';
 
 // import { useEffect } from 'react';
-
 // export default function App() {
 //   useEffect(() => {
 //     fetch('http://127.0.0.1:8000/api/test')
@@ -20,8 +19,6 @@ import { FavoriteProvider } from './context/FavoriteContext';
 //       .then(data => console.log('✅ Réponse API :', data))
 //       .catch(err => console.error('❌ Erreur CORS/API :', err));
 //   }, []);
-
-
 //   return <h1>Test API Laravel depuis React</h1>;
 // }
 
