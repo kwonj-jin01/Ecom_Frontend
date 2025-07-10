@@ -37,8 +37,6 @@ export const menuData: MenuData = {
         items: [
           "New Arrivals",
           "Best Sellers",
-          "Sale Items",
-          "Featured Products",
           "Limited Edition",
         ],
       },
@@ -48,7 +46,6 @@ export const menuData: MenuData = {
           "Spring Collection",
           "Summer Essentials",
           "Workout Gear",
-          "Casual Wear",
         ],
       },
     ],
@@ -99,11 +96,7 @@ export const menuData: MenuData = {
       },
       {
         title: "Clothing",
-        items: [
-          "Hoodies & Sweatshirts",
-          "Jordan",
-          "Tops & T-Shirts",
-        ],
+        items: ["Hoodies & Sweatshirts", "Jordan", "Tops & T-Shirts"],
       },
       {
         title: "Accessories",
@@ -111,19 +104,11 @@ export const menuData: MenuData = {
       },
       {
         title: "SHOP BY SPORT",
-        items: [
-          "Baseball",
-          "Running",
-          "Yoga",
-        ],
+        items: ["Baseball", "Running", "Yoga"],
       },
       {
         title: "Shop By Color",
-        items: [
-          "Elemental Pink",
-          "University Red",
-          "Black And Sail",
-        ],
+        items: ["Elemental Pink", "University Red", "Black And Sail"],
       },
     ],
     bottomLinks: [
@@ -138,8 +123,6 @@ export const menuData: MenuData = {
         title: "Hot Right Now",
         items: [
           "Viral TikTok Styles",
-          "Celebrity Favorites",
-          "Influencer Picks",
           "Most Shared",
           "Social Media Hits",
         ],
@@ -149,7 +132,6 @@ export const menuData: MenuData = {
         items: [
           "Summer Vibes",
           "Festival Ready",
-          "Vacation Essentials",
           "Beach Wear",
         ],
       },

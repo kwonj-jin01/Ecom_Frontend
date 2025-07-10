@@ -1,13 +1,14 @@
+// components/home/ProductGrid.tsx
 import React, { useState } from 'react';
-import { ShoppingBag, Heart } from 'lucide-react';
-import { Product } from '../../types';
+import { ShoppingBag, Heart, Star } from 'lucide-react';
+import { ProcessedProduct } from '../../types';
 import { useCart } from '../../context/CartContext';
 import Button from '../ui/Button';
 import { useFavorites } from '../../context/FavoriteContext';
 
 interface ProductGridProps {
   title: string;
-  products: Product[];
+  products: ProcessedProduct[];
 }
 
 // Centralise les tailles disponibles
@@ -19,11 +20,11 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
   const { favorites, toggleFavorite } = useFavorites();
 
   // ─── States ─────────────────────────────────────────────────────────────
-  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [quickViewProduct, setQuickViewProduct] = useState<ProcessedProduct | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>('M');
 
   // ─── Handlers ───────────────────────────────────────────────────────────
-  const handleQuickView = (product: Product) => {
+  const handleQuickView = (product: ProcessedProduct) => {
     setQuickViewProduct(product);
     setSelectedSize('M');
   };
@@ -36,6 +37,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
       closeQuickView();
     }
   };
+
+  // Early return if no products
+  if (!products || products.length === 0) {
+    return (
+      <section className="py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-4xl font-bold italic leading-tight mb-8">{title}.</h2>
+          <p className="text-gray-500 text-center py-8">No products available</p>
+        </div>
+      </section>
+    );
+  }
 
   // ─── Render ─────────────────────────────────────────────────────────────
   return (
@@ -63,6 +76,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
       <div className="flex overflow-x-auto space-x-8 pb-4 scrollbar-hide">
         {products.map((product) => {
           const isFavorite = favorites.has(product.id);
+          const hasDiscount = product.is_on_sale && product.discount > 0;
+
           return (
             <div key={product.id} className="group flex-shrink-0 w-64">
               {/* Image & actions */}
@@ -70,15 +85,23 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
                 <div className="aspect-square bg-gray-100 relative overflow-hidden">
                   {/* Image principale */}
                   <img
-                    src={product.image}
+                    src={product.thumbnail}
                     alt={product.name}
                     className="w-full h-[300px] object-cover object-center group-hover:opacity-0 transition-opacity duration-300"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = product.thumbnail; // Fallback to thumbnail
+                    }}
                   />
                   {/* Image au survol */}
                   <img
-                    src={product.hoverImage ?? product.image}
+                    src={product.hover_image}
                     alt={`${product.name} hover`}
                     className="w-full h-[300px] object-cover object-center absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = product.thumbnail; // Fallback to main image
+                    }}
                   />
 
                   {/* Bouton quick‑shop */}
@@ -86,18 +109,27 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
                     <button
                       onClick={() => handleQuickView(product)}
                       className="w-full py-2 bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors"
+                      disabled={!product.in_stock}
                     >
-                      ADD
+                      {product.in_stock ? 'ADD' : 'OUT OF STOCK'}
                     </button>
                   </div>
 
                   {/* Badges */}
                   <div className="absolute top-2 left-2 flex flex-col gap-1">
-                    {product.isNew && (
+                    {product.is_new && (
                       <span className="bg-black text-white px-2 py-1 text-xs font-medium">NEW</span>
                     )}
-                    {product.isBestSeller && (
+                    {product.is_best_seller && (
                       <span className="bg-white text-black px-2 py-1 text-xs font-medium">BEST SELLER</span>
+                    )}
+                    {product.is_on_sale && (
+                      <span className="bg-red-500 text-white px-2 py-1 text-xs font-medium">
+                        -{product.discount_percentage}%
+                      </span>
+                    )}
+                    {!product.in_stock && (
+                      <span className="bg-gray-500 text-white px-2 py-1 text-xs font-medium">OUT OF STOCK</span>
                     )}
                   </div>
 
@@ -113,24 +145,30 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
 
               {/* Infos produit */}
               <div className="mt-4">
-                <h3 className="text-sm font-medium truncate" title={product.name}>{product.name}</h3>
-                <p className="text-sm font-medium mt-1">${product.price.toFixed(2)}</p>
+                <h3 className="text-sm font-medium truncate" title={product.title}>
+                  {product.title}
+                </h3>
+                <p className="text-xs text-gray-500 mb-1">{product.brand}</p>
 
-                {/* Couleurs */}
-                {product.colors?.length && (
-                  <div className="mt-2 flex gap-1">
-                    {product.colors.map((color, idx) => (
-                      <div
-                        key={idx}
-                        className="w-3 h-3 rounded-full border"
-                        style={{
-                          backgroundColor: color.toLowerCase(),
-                          borderColor: color.toLowerCase() === 'white' ? '#e5e5e5' : 'transparent',
-                        }}
-                        title={color}
-                      />
-                    ))}
-                  </div>
+                {/* Prix */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">${product.price.toFixed(2)}</span>
+                  {hasDiscount && (
+                    <span className="text-xs text-gray-500 line-through">
+                      ${product.original_price.toFixed(2)}
+                    </span>
+                  )}
+                </div>
+
+                {/* Rating */}
+                <div className="flex items-center gap-1 mt-1">
+                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                  <span className="text-xs text-gray-600">{product.rating}</span>
+                </div>
+
+                {/* Stock indicator */}
+                {product.in_stock && (
+                  <p className="text-xs text-orange-500 mt-1">Only {product.stock} left!</p>
                 )}
               </div>
             </div>
@@ -149,25 +187,41 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
             />
 
             {/* Contenu */}
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl w-full">
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl w-full">
               <div className="flex flex-col md:flex-row">
                 {/* Image */}
                 <div className="md:w-1/2 bg-gray-100">
                   <img
-                    src={quickViewProduct.image}
+                    src={quickViewProduct.thumbnail}
                     alt={quickViewProduct.name}
                     className="w-full h-full object-cover object-center"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = quickViewProduct.thumbnail;
+                    }}
                   />
                 </div>
 
                 {/* Détails */}
                 <div className="md:w-1/2 p-6">
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-medium" id="modal-title">
-                        {quickViewProduct.name}
+                      <h3 className="text-xl font-medium" id="modal-title">
+                        {quickViewProduct.title}
                       </h3>
-                      <p className="text-lg font-medium mt-1">${quickViewProduct.price.toFixed(2)}</p>
+                      <p className="text-sm text-gray-500 mb-2">{quickViewProduct.brand}</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg font-medium">${quickViewProduct.price.toFixed(2)}</span>
+                        {quickViewProduct.is_on_sale && (
+                          <span className="text-sm text-gray-500 line-through">
+                            ${quickViewProduct.original_price.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm text-gray-600">{quickViewProduct.rating}</span>
+                      </div>
                     </div>
                     <button onClick={closeQuickView} className="text-gray-400 hover:text-gray-500">
                       <span className="sr-only">Close</span>
@@ -177,37 +231,30 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
                     </button>
                   </div>
 
-                  {/* Couleurs */}
-                  {quickViewProduct.colors?.length && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium">Color</h4>
-                      <div className="mt-2 flex gap-2">
-                        {quickViewProduct.colors.map((color, idx) => (
-                          <div
-                            key={idx}
-                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer"
-                            title={color}
-                          >
-                            <span className="w-6 h-6 rounded-full" style={{ backgroundColor: color.toLowerCase() }} />
-                          </div>
-                        ))}
-                      </div>
+                  {/* Description */}
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-700">{quickViewProduct.description}</p>
+                  </div>
+
+                  {/* Promotion */}
+                  {quickViewProduct.promotion && (
+                    <div className="mb-4 p-3 bg-green-50 rounded">
+                      <p className="text-sm text-green-800">{quickViewProduct.promotion}</p>
                     </div>
                   )}
 
                   {/* Tailles */}
-                  <div className="mt-6">
-                    <h4 className="text-sm font-medium">Size</h4>
-                    <div className="mt-2 grid grid-cols-5 gap-2">
+                  <div className="mb-6">
+                    <h4 className="text-sm font-medium mb-2">Size</h4>
+                    <div className="grid grid-cols-5 gap-2">
                       {SIZES.map((size) => (
                         <button
                           key={size}
                           onClick={() => setSelectedSize(size)}
-                          className={`py-2 border text-sm ${
-                            selectedSize === size
+                          className={`py-2 border text-sm ${selectedSize === size
                               ? 'border-black bg-black text-white'
                               : 'border-gray-300 hover:border-gray-700'
-                          }`}
+                            }`}
                         >
                           {size}
                         </button>
@@ -215,20 +262,32 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
                     </div>
                   </div>
 
+                  {/* Stock info */}
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600">
+                      {quickViewProduct.in_stock
+                        ? `${quickViewProduct.stock} in stock`
+                        : 'Out of stock'
+                      }
+                    </p>
+                  </div>
+
                   {/* Ajouter au panier */}
-                  <div className="mt-8">
+                  <div className="mb-4">
                     <Button
                       onClick={handleAddToCart}
                       fullWidth
                       size="lg"
                       className="flex items-center justify-center gap-2"
+                      disabled={!quickViewProduct.in_stock}
                     >
-                      <ShoppingBag size={18} /> ADD TO CART
+                      <ShoppingBag size={18} />
+                      {quickViewProduct.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
                     </Button>
                   </div>
 
                   {/* Lien détails */}
-                  <div className="mt-4 text-center">
+                  <div className="text-center">
                     <a href={`/products/${quickViewProduct.id}`} className="text-sm font-medium underline">
                       View full details
                     </a>

@@ -1,16 +1,16 @@
 import React, {
   useState,
   useMemo,
-
+  useEffect,
 } from "react";
+
 import { Search, Filter, } from "lucide-react";
-import { Product } from "../types";
-import { allProducts } from "../data/products";
+import { ProcessedProduct } from "../types";
+import { fetchAllProducts } from "../data/products";
 import ProductCard from "../components/products/ProductCard";
 import { useFavorites } from '../context/FavoriteContext';
 import { useCart } from '../context/CartContext';
-
-
+import LoaderOrError from "../components/ui/LoaderOrError";
 
 type SortOption =
   | "Featured"
@@ -18,6 +18,20 @@ type SortOption =
   | "Price: Low to High"
   | "Price: High to Low"
   | "Rating";
+
+/* ---------- CONSTANTES ---------- */
+const filters = [
+  "All",
+  "Jackets",
+  "Sports Bras",
+  "Leggings",
+  "Hoodies",
+  "T-Shirts",
+  "Tank Tops",
+  "Shorts",
+] as const;
+
+const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 const ProductList: React.FC = () => {
   /* ---------- STATES ---------- */
@@ -29,39 +43,50 @@ const ProductList: React.FC = () => {
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const [displayCount, setDisplayCount] = useState<number>(6);
   const [selectedSizes, setSelectedSizes] = useState<Set<string>>(new Set());
-  const [priceRange, setPriceRange] = useState<number>(200);
+  const [priceRange, setPriceRange] = useState<number>(200000);
+  const [products, setProducts] = useState<ProcessedProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    document.title = 'FITIX - Global B2B Marketplace';
+    window.scrollTo(0, 0);
+
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const fetchedProducts = await fetchAllProducts();
+        setProducts(fetchedProducts);
+      } catch (err) {
+        console.error('Failed to load products:', err);
+        setError('Failed to load products');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
 
 
-  /* ---------- CONSTANTES ---------- */
-  const filters = [
-    "All",
-    "Jackets",
-    "Sports Bras",
-    "Leggings",
-    "Hoodies",
-    "T-Shirts",
-    "Tank Tops",
-    "Shorts",
-  ] as const;
-
-  const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
   // Filtered and sorted products
   /* ---------- MÉMOS ---------- */
-  const filteredProducts = useMemo<Product[]>(() => {
-    const filtered = allProducts.filter((p) => {
-      const category = selectedFilter === "All" || p.category === selectedFilter;
-      const search = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const size =
-        selectedSizes.size === 0 ||
-        [...selectedSizes].some((s) => p.sizes?.includes(s));
+  const filteredProducts = useMemo<ProcessedProduct[]>(() => {
+    const filtered = products.filter((p) => {
+      const category = selectedFilter === "All" ||
+        p.category === selectedFilter ||
+        p.category.toLowerCase().includes(selectedFilter.toLowerCase()); const search = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+      // Fix: Vérifier si le produit a des tailles disponibles ou si aucune taille n'est sélectionnée
+      const size = selectedSizes.size === 0 || true; // Temporairement simplifié
       const price = p.price <= priceRange;
       return category && search && size && price;
     });
 
     switch (sortBy) {
       case "Newest":
-        filtered.sort((a, b) => Number(b.isNew) - Number(a.isNew));
+        filtered.sort((a, b) => Number(b.is_new) - Number(a.is_new));
         break;
       case "Price: Low to High":
         filtered.sort((a, b) => a.price - b.price);
@@ -73,19 +98,17 @@ const ProductList: React.FC = () => {
         filtered.sort((a, b) => b.rating - a.rating);
         break;
       default:
-        break; // Featured → ordre original
+        break;
     }
+
     return filtered;
-  }, [selectedFilter, searchTerm, selectedSizes, priceRange, sortBy]);
+  }, [products, selectedFilter, searchTerm, selectedSizes, priceRange, sortBy]);
 
   const displayedProducts = filteredProducts.slice(0, displayCount);
 
-
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = (product: ProcessedProduct) => {
     addToCart(product);
   };
-
-
 
   const toggleSize = (size: string) =>
     setSelectedSizes((prev) => {
@@ -102,8 +125,13 @@ const ProductList: React.FC = () => {
     setDisplayCount(prev => prev + 6);
   };
 
-  return (
+  // État de chargement
+  if (loading || error) {
+    return <LoaderOrError loading={loading} error={error} />;
+  }
 
+
+  return (
     <div className="max-w-7xl mx-auto px-6 py-8">
       {/* Mobile Search */}
       <div className="md:hidden mb-4">
@@ -236,7 +264,7 @@ const ProductList: React.FC = () => {
             {displayedProducts.map((product) => (
               <ProductCard
                 key={product.id}
-                product={{ ...product, inStock: true }} // Ajout de inStock
+                product={product}
                 onToggleFavorite={() => toggleFavorite(product.id)}
                 onAddToCart={() => handleAddToCart(product)}
                 isFavorite={favorites.has(product.id)}
@@ -256,7 +284,7 @@ const ProductList: React.FC = () => {
             </div>
           )}
 
-          {filteredProducts.length === 0 && (
+          {filteredProducts.length === 0 && !loading && (
             <div className="text-center py-12">
               <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
               <button

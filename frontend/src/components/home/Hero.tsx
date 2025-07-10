@@ -69,7 +69,7 @@ const Hero: React.FC = () => {
         {/* Main Image and Content */}
         <div className="relative flex flex-col lg:flex-row items-center justify-between gap-6">
           {/* Left Testimonials */}
-          <div className={`w-full lg:w-1/3 transition-all duration-[1500ms] delay-700 ${isLoaded ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'}`}>
+          <div className={`w-full lg:w-1/3 transition-all duration-[1500ms] delay-700 ${isLoaded ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'} hidden md:block`}>
             <div className="bg-green-500 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
               <div className="flex items-center space-x-3 mb-4">
                 {testimonials.map((_, index) => (
@@ -85,11 +85,10 @@ const Hero: React.FC = () => {
           {/* Central Model Image */}
           <div className={`relative transition-all duration-1500 delay-1000 ${isLoaded ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-20 opacity-0 scale-95'}`}>
             <img src={image} alt="Description" />
-
           </div>
 
           {/* Right Video Card */}
-          <div className={`w-full lg:w-1/3 transition-all duration-[1500ms] delay-1200 ${isLoaded ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
+          <div className={`w-full lg:w-1/3 transition-all duration-[1500ms] delay-1200 ${isLoaded ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'} hidden md:block`}>
             <div className="relative w-full h-48 bg-black rounded-2xl overflow-hidden shadow-2xl group cursor-pointer">
               <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=250&fit=crop" alt="Workout Video" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center">

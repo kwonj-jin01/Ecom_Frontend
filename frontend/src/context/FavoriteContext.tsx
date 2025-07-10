@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState } from 'react';
 type FavoriteContextType = {
   favorites: Set<string>;
   toggleFavorite: (productId: string) => void;
+  isFavorite: (productId: string) => boolean;
 };
 
 const FavoriteContext = createContext<FavoriteContextType | undefined>(undefined);
@@ -23,8 +24,11 @@ export const FavoriteProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   };
 
+  // ✅ Ajout ici : définition de isFavorite
+  const isFavorite = (productId: string) => favorites.has(productId);
+
   return (
-    <FavoriteContext.Provider value={{ favorites, toggleFavorite }}>
+    <FavoriteContext.Provider value={{ favorites, toggleFavorite, isFavorite }}>
       {children}
     </FavoriteContext.Provider>
   );

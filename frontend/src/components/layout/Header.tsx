@@ -16,6 +16,8 @@ import CartPreview from '../cart/CartPreview';
 import { useCart } from '../../context/CartContext';
 import { useFavorites } from '../../context/FavoriteContext';
 import { useAuth } from '../../hook/useAuth';
+import { fetchAllProducts } from '../../data/products';
+import { ProcessedProduct } from "../../types"; // Changed from Product to ProcessedProduct
 
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -24,7 +26,34 @@ const Header: React.FC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { favorites } = useFavorites();
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [isFocused, setIsFocused] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+
   const [showCart, setShowCart] = useState<boolean>(false);
+  const [allProducts, setAllProducts] = useState<ProcessedProduct[]>([]); // Changed type
+  const [loadingProducts, setLoadingProducts] = useState<boolean>(true);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const data = await fetchAllProducts();
+        setAllProducts(data);
+        setLoadingProducts(false);
+      } catch (error) {
+        console.error("Error loading products:", error);
+        setLoadingProducts(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  // Filtrage : on cherche dans name ET title → insensible à la casse
+  const filtered: ProcessedProduct[] = allProducts.filter((p) =>
+    (p.name + " " + p.title).toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const closeWithDelay = () => setTimeout(() => setIsFocused(false), 200);
 
   // Utilise le contexte d'authentification
   const { user, isAuthenticated, logout } = useAuth();
@@ -63,6 +92,19 @@ const Header: React.FC = () => {
     setShowUserMenu(false);
   };
 
+  // Handle product selection from search results
+  const handleProductSelect = (product: ProcessedProduct) => {
+    // Navigate to product page or handle selection
+    console.log("Selected product:", product);
+    // You can add navigation logic here
+    // For example: navigate(`/product/${product.id}`);
+    
+    // Clear search state
+    setSearchTerm("");
+    setIsFocused(false);
+    setShowMobileSearch(false);
+  };
+
   // Close mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -88,6 +130,7 @@ const Header: React.FC = () => {
     if (isMobileMenuOpen) {
       setShowCart(false);
       setShowUserMenu(false);
+      setShowMobileSearch(false);
     }
   }, [isMobileMenuOpen]);
 
@@ -95,6 +138,7 @@ const Header: React.FC = () => {
     if (showCart) {
       setIsMobileMenuOpen(false);
       setShowUserMenu(false);
+      setShowMobileSearch(false);
     }
   }, [showCart]);
 
@@ -102,8 +146,17 @@ const Header: React.FC = () => {
     if (showUserMenu) {
       setShowCart(false);
       setIsMobileMenuOpen(false);
+      setShowMobileSearch(false);
     }
   }, [showUserMenu]);
+
+  useEffect(() => {
+    if (showMobileSearch) {
+      setShowCart(false);
+      setIsMobileMenuOpen(false);
+      setShowUserMenu(false);
+    }
+  }, [showMobileSearch]);
 
   /** ---- Top banner ---- */
   const WorkoutStore = () => (
@@ -119,7 +172,7 @@ const Header: React.FC = () => {
       <WorkoutStore />
       {/* Header */}
       <header className={`${isScrolled ? 'bg-green-500' : 'bg-white'} shadow-sm border-b border-gray-100 sticky top-0 z-50 transition-all duration-300`}>
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-8">
               <Link to="/" className="text-2xl font-bold">
@@ -140,28 +193,82 @@ const Header: React.FC = () => {
               </nav>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-2 w-64">
-                <Search className="w-4 h-4 text-gray-500 mr-2" />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-transparent outline-none flex-1 text-sm"
-                />
+            <div className="flex items-center gap-2 sm:gap-4">
+              {/* Desktop Search */}
+              <div className="relative hidden md:block w-64">
+                <div className="flex items-center bg-gray-100 rounded-full px-4 py-2 w-full">
+                  <Search className="w-4 h-4 text-gray-500 mr-2" />
+                  <input
+                    type="text"
+                    placeholder="Search products…"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={closeWithDelay}
+                    className="bg-transparent outline-none flex-1 text-sm"
+                  />
+                </div>
+
+                {/* Desktop dropdown with loading state */}
+                {searchTerm && isFocused && (
+                  <div className="absolute top-12 left-0 w-full bg-white rounded-md shadow-lg z-10 max-h-60 overflow-y-auto">
+                    {loadingProducts ? (
+                      <div className="px-4 py-2 text-sm text-gray-500">
+                        Chargement...
+                      </div>
+                    ) : filtered.length ? (
+                      filtered.map((product) => (
+                        <button
+                          key={product.id}
+                          className="flex w-full items-center px-4 py-2 hover:bg-gray-100 transition-colors"
+                          onClick={() => handleProductSelect(product)}
+                        >
+                          <img
+                            src={product.thumbnail || product.hover_image}
+                            alt={product.name}
+                            className="w-8 h-8 object-cover rounded mr-3"
+                            onError={(e) => {
+                              // Fallback image handling
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/placeholder-image.jpg'; // Add a placeholder image
+                            }}
+                          />
+                          <div className="flex-1 text-left">
+                            <span className="text-sm font-medium truncate block">{product.name}</span>
+                            <span className="text-xs text-gray-500 truncate block">{product.title}</span>
+                          </div>
+                          <span className="text-sm font-medium text-green-600 ml-2">
+                            ${product.price.toFixed(2)}
+                          </span>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-2 text-sm text-gray-500">
+                        Aucun résultat trouvé
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
+
+              {/* Mobile Search Button */}
+              <button
+                onClick={() => setShowMobileSearch(!showMobileSearch)}
+                className="md:hidden p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <Search className="w-5 h-5" />
+              </button>
 
               {/* Bouton Sign In/Up ou Menu Utilisateur */}
               {!isAuthenticated ? (
                 <Link
                   to="/login"
-                  className={`${isScrolled ? 'bg-white text-black' : 'bg-green-500 text-white'} px-4 py-2 rounded-full text-sm hover:bg-green-600 transition-colors`}
+                  className={`hidden sm:block ${isScrolled ? 'bg-white text-black' : 'bg-green-500 text-white'} px-4 py-2 rounded-full text-sm hover:bg-green-600 transition-colors`}
                 >
                   SIGN IN/UP
                 </Link>
               ) : (
-                <div className="relative user-menu-container">
+                <div className="relative user-menu-container hidden sm:block">
                   <button
                     onClick={toggleUserMenu}
                     className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -259,18 +366,18 @@ const Header: React.FC = () => {
                 </div>
               )}
 
-              <div className="flex items-center gap-3">
-                <button
+              <div className="flex items-center gap-1 sm:gap-3">
+                <Link
+                  to="/favorites"
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
-                  onClick={() => console.log("Aller à la page des favoris")}
                 >
                   <Heart className="w-5 h-5" />
                   {favorites.size > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] sm:text-xs">
                       {favorites.size}
                     </span>
                   )}
-                </button>
+                </Link>
 
                 <div className="relative">
                   <button
@@ -279,7 +386,7 @@ const Header: React.FC = () => {
                   >
                     <ShoppingBag className="w-5 h-5" />
                     {getTotalCartItems() > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] sm:text-xs">
                         {getTotalCartItems()}
                       </span>
                     )}
@@ -297,6 +404,80 @@ const Header: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Mobile Search Bar */}
+        {showMobileSearch && (
+          <div className="md:hidden px-4 pb-4 border-t border-gray-200">
+            <div className="relative">
+              <div className="flex items-center bg-gray-100 rounded-full px-4 py-3">
+                <Search className="w-4 h-4 text-gray-500 mr-2" />
+                <input
+                  type="text"
+                  placeholder="Search products…"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={closeWithDelay}
+                  className="bg-transparent outline-none flex-1 text-sm"
+                  autoFocus
+                />
+                <button
+                  onClick={() => {
+                    setShowMobileSearch(false);
+                    setSearchTerm("");
+                    setIsFocused(false);
+                  }}
+                  className="ml-2 p-1 hover:bg-gray-200 rounded-full transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Mobile Search Results - Enhanced Grid */}
+              {searchTerm && isFocused && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg z-10 max-h-80 overflow-y-auto">
+                  {loadingProducts ? (
+                    <div className="px-4 py-8 text-center text-sm text-gray-500">
+                      Chargement...
+                    </div>
+                  ) : filtered.length ? (
+                    <div className="grid grid-cols-2 gap-3 p-4">
+                      {filtered.map((product) => (
+                        <button
+                          key={product.id}
+                          className="flex flex-col bg-gray-50 rounded-lg overflow-hidden hover:bg-gray-100 transition-colors p-2"
+                          onClick={() => handleProductSelect(product)}
+                        >
+                          <div className="aspect-square rounded-lg overflow-hidden mb-2">
+                            <img
+                              src={product.thumbnail || product.hover_image}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = '/placeholder-image.jpg';
+                              }}
+                            />
+                          </div>
+                          <div className="text-left">
+                            <p className="text-xs font-medium truncate">{product.name}</p>
+                            <p className="text-xs text-green-600 font-medium">
+                              ${product.price.toFixed(2)}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="px-4 py-8 text-center text-sm text-gray-500">
+                      Aucun résultat trouvé
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Desktop dropdown menu */}
         {activeMenu && (

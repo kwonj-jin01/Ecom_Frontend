@@ -4,7 +4,7 @@ import { User, Mail, Phone, MapPin, Target } from 'lucide-react';
 import { InputField } from './InputField';
 import { SelectField } from './SelectField';
 import { PasswordInput } from './PasswordInput';
-import { CheckboxField } from '../../components/ui/CheckboxField';
+import { CheckboxField } from './CheckboxField';
 import { Button2 } from './Button2';
 import { SPORT_TYPES, COUNTRIES } from '../../data/index';
 import type { RegisterFormData } from '../../types/auth';

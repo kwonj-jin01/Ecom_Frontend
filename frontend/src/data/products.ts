@@ -1,325 +1,169 @@
-import { Product } from "../types";
+import axios from "axios";
+import {
+  Product,
+  ProcessedProduct,
+  ProductDetailData,
+  ApiResponse,
+} from "../types";
 
-export const allProducts: Product[] = [
-  {
-    id: "1",
-    title: "Pro Hoodie",
-    name: "ASRV x Equinox Pro Hoodie",
-    description: "Premium hoodie for winter workouts and casual wear.",
-    price: 85.0,
-    discountPercentage: 30,
-    rating: 4.8,
-    stock: 20,
-    brand: "ASRV",
-    category: "hoodies",
-    gender: "unisex",
-    thumbnail:
-      "https://images.unsplash.com/photo-1556306535-0f09a537f0a3?w=400&fit=crop",
-    image:
-      "https://images.unsplash.com/photo-1556306535-0f09a537f0a3?w=400&fit=crop",
-    hoverImage:
-      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&fit=crop",
-    images: ["https://images.unsplash.com/photo-1556306535-0f09a537f0a3?w=500"],
-    colors: ["Black", "Gray", "Green"],
-    isNew: false,
-    bestSeller: true,
-    isBestSeller: true,
-    inStock: true,
-    isOnSale: true,
-    originalPrice: 120,
-    discount: 30,
-    promotion: null,
+const API_URL = import.meta.env.VITE_API_URL;
+
+// Configuration axios
+const apiClient = axios.create({
+  baseURL: API_URL,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
   },
-  {
-    id: "2",
-    title: "Performance T-Shirt",
-    name: "ASRV Performance T-Shirt",
-    description: "Breathable shirt perfect for intense workouts.",
-    price: 45.0,
-    discountPercentage: 0,
-    rating: 4.5,
-    stock: 50,
-    brand: "ASRV",
-    category: "t-shirts",
-    gender: "male",
-    thumbnail:
-      "https://images.unsplash.com/photo-1564557287817-3785e38ec1f5?w=400&fit=crop",
-    image:
-      "https://images.unsplash.com/photo-1564557287817-3785e38ec1f5?w=400&fit=crop",
-    hoverImage:
-      "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&fit=crop",
+});
+
+// Intercepteur pour gérer les erreurs
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error("Erreur API:", error);
+    return Promise.reject(error);
+  }
+);
+
+// Fonction utilitaire pour convertir les strings en numbers
+const parseNumericValue = (value: string | null): number => {
+  if (!value) return 0;
+  const parsed = parseFloat(value);
+  return isNaN(parsed) ? 0 : parsed;
+};
+
+// Fonction pour traiter les produits
+const processProduct = (product: Product): ProcessedProduct => {
+  return {
+    ...product,
+    // Créer un tableau d'images à partir des propriétés individuelles
     images: [
-      "https://images.unsplash.com/photo-1564557287817-3785e38ec1f5?w=500",
-    ],
-    colors: ["White", "Black", "Green", "Gray"],
-    isNew: true,
-    bestSeller: false,
-    isBestSeller: false,
-    inStock: true,
-    isOnSale: false,
-    promotion: "NEW",
-  },
-  {
-    id: "3",
-    title: "Training Shorts Pro",
-    name: "ASRV Training Shorts Pro",
-    description: "Lightweight shorts for high-performance training.",
-    price: 35.0,
-    discountPercentage: 30,
-    rating: 4.7,
-    stock: 40,
-    brand: "ASRV",
-    category: "shorts",
-    gender: "male",
-    thumbnail:
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&fit=crop",
-    image:
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&fit=crop",
-    hoverImage:
-      "https://images.unsplash.com/photo-1594882645126-14020914d58d?w=400&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500",
-    ],
-    colors: ["Black", "Green", "Gray"],
-    isNew: false,
-    bestSeller: true,
-    isBestSeller: true,
-    inStock: true,
-    isOnSale: true,
-    originalPrice: 50,
-    discount: 30,
-    promotion: null,
-  },
-  {
-    id: "4",
-    title: "Elite Joggers",
-    name: "ASRV Elite Joggers",
-    description: "Stylish joggers for comfort and movement.",
-    price: 95.0,
-    discountPercentage: 0,
-    rating: 4.9,
-    stock: 30,
-    brand: "ASRV",
-    category: "joggers",
-    gender: "unisex",
-    thumbnail:
-      "https://images.unsplash.com/photo-1605518216938-7c31b7b14ad0?w=400&fit=crop",
-    image:
-      "https://images.unsplash.com/photo-1605518216938-7c31b7b14ad0?w=400&fit=crop",
-    hoverImage:
-      "https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=400&fit=crop",
-    images: [
-      "https://images.unsplash.com/photo-1605518216938-7c31b7b14ad0?w=500",
-    ],
-    colors: ["Black", "Gray"],
-    isNew: true,
-    bestSeller: false,
-    isBestSeller: false,
-    inStock: true,
-    isOnSale: false,
-    promotion: null,
-  },
-  {
-    id: "5",
-    title: "Muscle Tank",
-    name: "ASRV Muscle Tank",
-    description: "Perfect for hot workouts and muscle definition.",
-    price: 25.0,
-    discountPercentage: 20,
-    rating: 4.3,
-    stock: 0,
-    brand: "ASRV",
-    category: "t-shirts",
-    gender: "male",
-    thumbnail:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&fit=crop",
-    image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&fit=crop",
-    hoverImage:
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&fit=crop",
-    images: ["https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500"],
-    colors: ["White", "Black", "Green"],
-    isNew: false,
-    bestSeller: false,
-    isBestSeller: false,
-    inStock: false,
-    isOnSale: true,
-    originalPrice: 32,
-    discount: 20,
-    promotion: null,
-  },
-  {
-    id: "6",
-    title: "Training Jacket",
-    name: "ASRV Training Jacket",
-    description: "Water-resistant jacket for outdoor training.",
-    price: 120.0,
-    discountPercentage: 15,
-    rating: 4.6,
-    stock: 25,
-    brand: "ASRV",
-    category: "jackets",
-    gender: "unisex",
-    thumbnail:
-      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&fit=crop",
-    image:
-      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&fit=crop",
-    hoverImage:
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&fit=crop",
-    images: ["https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=500"],
-    colors: ["Black", "Navy", "Gray"],
-    isNew: true,
-    bestSeller: true,
-    isBestSeller: true,
-    inStock: true,
-    isOnSale: true,
-    originalPrice: 140,
-    discount: 15,
-    promotion: "LIMITED",
-  },
-  {
-    id: "7",
-    title: "Training Jacket",
-    name: "ASRV Training Jacket",
-    description: "Water-resistant jacket for outdoor training.",
-    price: 120.0,
-    discountPercentage: 15,
-    rating: 4.6,
-    stock: 25,
-    brand: "ASRV",
-    category: "jackets",
-    gender: "unisex",
-    thumbnail:
-      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&fit=crop",
-    image:
-      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&fit=crop",
-    hoverImage:
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&fit=crop",
-    images: ["https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=500"],
-    colors: ["Black", "Navy", "Gray"],
-    isNew: true,
-    bestSeller: true,
-    isBestSeller: true,
-    inStock: true,
-    isOnSale: true,
-    originalPrice: 140,
-    discount: 15,
-    promotion: "LIMITED",
-  },
-  {
-    id: "8",
-    title: "Training Jacket",
-    name: "ASRV Training Jacket",
-    description: "Water-resistant jacket for outdoor training.",
-    price: 120.0,
-    discountPercentage: 15,
-    rating: 4.6,
-    stock: 25,
-    brand: "ASRV",
-    category: "jackets",
-    gender: "unisex",
-    thumbnail:
-      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&fit=crop",
-    image:
-      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&fit=crop",
-    hoverImage:
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&fit=crop",
-    images: ["https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=500"],
-    colors: ["Black", "Navy", "Gray"],
-    isNew: true,
-    bestSeller: true,
-    isBestSeller: true,
-    inStock: true,
-    isOnSale: true,
-    originalPrice: 140,
-    discount: 15,
-    promotion: "LIMITED",
-  },
-  {
-    id: "9",
-    title: "Training Jacket",
-    name: "ASRV Training Jacket",
-    description: "Water-resistant jacket for outdoor training.",
-    price: 120.0,
-    discountPercentage: 15,
-    rating: 4.6,
-    stock: 25,
-    brand: "ASRV",
-    category: "jackets",
-    gender: "unisex",
-    thumbnail:
-      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&fit=crop",
-    image:
-      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&fit=crop",
-    hoverImage:
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&fit=crop",
-    images: ["https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=500"],
-    colors: ["Black", "Navy", "Gray"],
-    isNew: true,
-    bestSeller: true,
-    isBestSeller: true,
-    inStock: true,
-    isOnSale: true,
-    originalPrice: 140,
-    discount: 15,
-    promotion: "LIMITED",
-  },
-  {
-    id: "10",
-    title: "Training Jacket",
-    name: "ASRV Training Jacket",
-    description: "Water-resistant jacket for outdoor training.",
-    price: 120.0,
-    discountPercentage: 15,
-    rating: 4.6,
-    stock: 25,
-    brand: "ASRV",
-    category: "jackets",
-    gender: "unisex",
-    thumbnail:
-      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&fit=crop",
-    image:
-      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&fit=crop",
-    hoverImage:
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&fit=crop",
-    images: ["https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=500"],
-    colors: ["Black", "Navy", "Gray"],
-    isNew: true,
-    bestSeller: true,
-    isBestSeller: true,
-    inStock: true,
-    isOnSale: true,
-    originalPrice: 140,
-    discount: 15,
-    promotion: "LIMITED",
-  },
-  {
-    id: "11",
-    title: "Training Jacket",
-    name: "ASRV Training Jacket",
-    description: "Water-resistant jacket for outdoor training.",
-    price: 120.0,
-    discountPercentage: 15,
-    rating: 4.6,
-    stock: 25,
-    brand: "ASRV",
-    category: "jackets",
-    gender: "unisex",
-    thumbnail:
-      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&fit=crop",
-    image:
-      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&fit=crop",
-    hoverImage:
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&fit=crop",
-    images: ["https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=500"],
-    colors: ["Black", "Navy", "Gray"],
-    isNew: true,
-    bestSeller: true,
-    isBestSeller: true,
-    inStock: true,
-    isOnSale: true,
-    originalPrice: 140,
-    discount: 15,
-    promotion: "LIMITED",
-  },
-];
+      product.thumbnail,
+      product.image,
+      product.hover_image,
+      ...product.images,
+    ].filter(Boolean), // Filtrer les valeurs null/undefined
+
+    // Utiliser l'image principale ou le thumbnail comme fallback
+    image: product.image || product.thumbnail,
+
+    // Convertir les strings en numbers
+    price: parseNumericValue(product.price),
+    original_price: parseNumericValue(product.original_price),
+    discount: parseNumericValue(product.discount),
+    rating: parseNumericValue(product.rating),
+  };
+};
+
+// Récupérer tous les produits
+export const fetchAllProducts = async (): Promise<ProcessedProduct[]> => {
+  try {
+    const response = await apiClient.get<ApiResponse<Product[]>>("/products");
+
+    if (response.data.status !== "success" || !response.data.data) {
+      throw new Error("Réponse API invalide");
+    }
+
+    console.log("Produits récupérés depuis l'API :", response.data.data);
+
+    // Traiter les produits
+    const processedProducts: ProcessedProduct[] =
+      response.data.data.map(processProduct);
+
+    return processedProducts;
+  } catch (error) {
+    console.error("Erreur chargement produits :", error);
+
+    // Gérer les différents types d'erreurs
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        const status = error.response.status;
+
+        if (status === 404) {
+          throw new Error("Endpoint non trouvé");
+        } else if (status >= 500) {
+          throw new Error("Erreur serveur");
+        }
+      } else if (error.code === "ECONNABORTED") {
+        throw new Error("Timeout - Serveur trop lent");
+      } else {
+        throw new Error("Erreur inconnue");
+      }
+    } else {
+      throw new Error("Erreur non Axios");
+    }
+
+    throw new Error("Erreur lors du chargement des produits");
+  }
+};
+
+// Récupérer un produit spécifique
+export const fetchProductById = async (
+  id: string
+): Promise<ProcessedProduct | null> => {
+  try {
+    const response = await apiClient.get<ApiResponse<ProductDetailData>>(
+      `/products/${id}`
+    );
+
+    if (response.data.status !== "success" || !response.data.data) {
+      throw new Error("Produit non trouvé");
+    }
+
+    console.log("Produit récupéré depuis l'API :", response.data.data);
+
+    return processProduct(response.data.data);
+  } catch (error) {
+    console.error(`Erreur chargement produit ${id} :`, error);
+
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return null;
+    }
+
+    throw new Error("Erreur lors du chargement du produit");
+  }
+};
+
+// Récupérer les produits par catégorie
+export const fetchProductsByCategory = async (
+  categoryId: string
+): Promise<ProcessedProduct[]> => {
+  try {
+    const response = await apiClient.get<ApiResponse<Product[]>>(
+      `/products?category=${categoryId}`
+    );
+
+    if (response.data.status !== "success" || !response.data.data) {
+      throw new Error("Réponse API invalide");
+    }
+
+    return response.data.data.map(processProduct);
+  } catch (error) {
+    console.error(
+      `Erreur chargement produits catégorie ${categoryId} :`,
+      error
+    );
+    throw new Error("Erreur lors du chargement des produits");
+  }
+};
+
+// Fonction de recherche
+export const searchProducts = async (
+  query: string
+): Promise<ProcessedProduct[]> => {
+  try {
+    const response = await apiClient.get<ApiResponse<Product[]>>(
+      `/products/search?q=${encodeURIComponent(query)}`
+    );
+
+    if (response.data.status !== "success" || !response.data.data) {
+      throw new Error("Réponse API invalide");
+    }
+
+    return response.data.data.map(processProduct);
+  } catch (error) {
+    console.error(`Erreur recherche produits "${query}" :`, error);
+    throw new Error("Erreur lors de la recherche");
+  }
+};

@@ -2,7 +2,7 @@
 import React from 'react';
 import { InputField } from './InputField';
 import { PasswordInput } from './PasswordInput';
-import { CheckboxField } from '../ui/CheckboxField';
+import { CheckboxField } from './CheckboxField';
 import { Button2 } from './Button2';
 import type * as auth from '../../types/auth';
 
