@@ -30,58 +30,147 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  const { login, register, isAuthenticated } = useAuth();
+  const { login, register, isAuthenticated, loading: authLoading } = useAuth();
 
   useEffect(() => {
     document.title = isLogin ? 'Login - FITIX' : 'Register - FITIX';
 
     // If user is already authenticated, redirect to home
-    if (isAuthenticated) {
+    if (isAuthenticated && !authLoading) {
       navigate('/');
     }
-  }, [isLogin, isAuthenticated]);
+  }, [isLogin, isAuthenticated, authLoading]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const validateForm = () => {
+    if (!isLogin) {
+      // Registration validation
+      if (!formData.firstName.trim()) {
+        throw new Error('First name is required');
+      }
+      if (!formData.lastName.trim()) {
+        throw new Error('Last name is required');
+      }
+      if (!formData.email.trim()) {
+        throw new Error('Email is required');
+      }
+      if (!formData.password) {
+        throw new Error('Password is required');
+      }
+      if (formData.password.length < 8) {
+        throw new Error('Password must be at least 8 characters long');
+      }
+      if (!formData.agreeTerms) {
+        throw new Error('You must agree to the terms of service');
+      }
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        throw new Error('Please enter a valid email address');
+      }
+    } else {
+      // Login validation
+      if (!formData.email.trim()) {
+        throw new Error('Email is required');
+      }
+      if (!formData.password) {
+        throw new Error('Password is required');
+      }
+    }
+  };
+
+  const getErrorMessage = (error: any): string => {
+    if (error.response?.data?.message) {
+      return error.response.data.message;
+    }
+    
+    if (error.response?.data?.errors) {
+      // Laravel validation errors
+      const errors = error.response.data.errors;
+      const firstError = Object.values(errors)[0] as string[];
+      return firstError[0] || 'Validation error';
+    }
+    
+    switch (error.response?.status) {
+      case 400:
+        return 'Invalid data provided. Please check your input.';
+      case 401:
+        return 'Invalid email or password.';
+      case 409:
+        return 'An account with this email already exists.';
+      case 422:
+        return 'Please check your input and try again.';
+      case 500:
+        return 'Server error. Please try again later.';
+      default:
+        return error.message || 'An unexpected error occurred.';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setLoading(true);
 
     try {
+      // Validate form before submission
+      validateForm();
+
       if (isLogin) {
         await login(formData.email, formData.password);
-        setSuccessMessage('Connexion réussie !');
-        setTimeout(() => navigate('/'), 1000); // Redirige après 1s
+        setSuccessMessage('Login successful!');
+        setTimeout(() => navigate('/'), 1000);
       } else {
-        if (!formData.firstName.trim() || !formData.lastName.trim()) {
-          throw new Error('First name and last name are required');
-        }
-        if (!formData.agreeTerms) {
-          throw new Error('You must agree to the terms of service');
-        }
+        console.log('Submitting registration data:', {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+          country: formData.country,
+          sportType: formData.sportType,
+          newsletter: formData.newsletter
+        });
+
         const success = await register(
           formData.firstName,
           formData.lastName,
           formData.email,
           formData.password,
-          formData.phone,
-          formData.country,
-          formData.sportType
+          formData.phone || undefined,
+          formData.country || undefined,
+          formData.sportType || undefined,
+          formData.newsletter
         );
 
         if (success) {
-          setSuccessMessage('Account created successfully. You can now log in.');
+          setSuccessMessage('Account created successfully! You can now log in.');
           setTimeout(() => {
             setSuccessMessage('');
-            setIsLogin(true); // Bascule vers le mode login
+            setIsLogin(true);
+            // Reset form data but keep email
+            setFormData({
+              email: formData.email,
+              password: '',
+              firstName: '',
+              lastName: '',
+              phone: '',
+              confirmPassword: '',
+              country: '',
+              sportType: '',
+              agreeTerms: false,
+              newsletter: false
+            });
           }, 2000);
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Form submission error:', err);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -90,6 +179,7 @@ const Login: React.FC = () => {
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setError('');
+    setSuccessMessage('');
     // Reset form data when switching modes
     setFormData({
       email: '',
@@ -108,6 +198,15 @@ const Login: React.FC = () => {
   const togglePassword = () => {
     setShowPassword(!showPassword);
   };
+
+  // Show loading while checking auth state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black flex">
@@ -130,8 +229,8 @@ const Login: React.FC = () => {
                 : 'Join FITIX to start your fitness journey'}
             </p>
 
-            {/* Error Box */}
-            <AlertMessage message={error} type="error" />
+            {/* Error/Success Messages */}
+            {error && <AlertMessage message={error} type="error" />}
             {successMessage && <AlertMessage message={successMessage} type="success" />}
 
             {/* Form */}

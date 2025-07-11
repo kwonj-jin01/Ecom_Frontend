@@ -1,93 +1,152 @@
-// src/context/CartContext.tsx
-import { createContext, useContext, useState, ReactNode } from "react";
+import  {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
-// ─── Types ──────────────────────────────────────────────────────────────── 
+/* -------------------------------------------------------------------------- */
+/*                                  Types                                     */
+/* -------------------------------------------------------------------------- */
+
 export interface Product {
   id: string;
   name: string;
-  price: number;
+  title: string;        // ← Added for consistency with components
+  price: string;        // ← Changed to string to match component usage
   image: string;
+  thumbnail: string;    // ← Added for consistency with components
   description?: string;
   category?: string;
 }
 
-export interface CartItem extends Product {
+export interface CartItem {
+  product: Product;     // ← Changed to nested product structure
   quantity: number;
+  size: string;         // ← Made required as components expect it
+  color: string;        // ← Made required as components expect it
 }
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (id: string) => void;
-  updateCartQuantity: (id: string, qty: number) => void;
-  getTotalPrice: () => number;
-  getTotalCartItems: () => number;
+
+  /* Actions */
+  addToCart: (product: Product, size: string, color: string) => void;
+  removeFromCart: (productId: string, size: string, color: string) => void;
+  updateCartQuantity: (productId: string, size: string, color: string, quantity: number) => void;
   clearCart: () => void;
+
+  /* Sélecteurs / Helpers */
+  getSubtotal: () => number;
+  getTotalPrice: () => number;     // alias pour compatibilité
+  getTotalCartItems: () => number;
 }
 
-// ─── Context ────────────────────────────────────────────────────────────── 
+/* -------------------------------------------------------------------------- */
+/*                                 Contexte                                   */
+/* -------------------------------------------------------------------------- */
+
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-// ─── Provider ───────────────────────────────────────────────────────────── 
-export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [cart, setCart] = useState<CartItem[]>([]);
+/* -------------------------------------------------------------------------- */
+/*                                 Provider                                   */
+/* -------------------------------------------------------------------------- */
 
-  const addToCart = (product: Product) => {
+export const CartProvider = ({ children }: { children: ReactNode }) => {
+  /* Chargement initial depuis localStorage (optionnel) */
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const stored = localStorage.getItem("cart");
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  /* Persistance automatique (optionnel) */
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+  /* ------------------------------ Actions --------------------------------- */
+
+  const addToCart = (product: Product, size: string, color: string) => {
     setCart((prev) => {
-      const existingItem = prev.find((item) => item.id === product.id);
-      if (existingItem) {
+      const existing = prev.find((item) => 
+        item.product.id === product.id && 
+        item.size === size && 
+        item.color === color
+      );
+      
+      if (existing) {
         return prev.map((item) =>
-          item.id === product.id 
+          item.product.id === product.id && 
+          item.size === size && 
+          item.color === color
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
-      } else {
-        return [...prev, { ...product, quantity: 1 }];
       }
+      
+      return [...prev, { product, quantity: 1, size, color }];
     });
   };
 
-  const removeFromCart = (id: string) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
+  const removeFromCart = (productId: string, size: string, color: string) => {
+    setCart((prev) => prev.filter((item) => 
+      !(item.product.id === productId && item.size === size && item.color === color)
+    ));
   };
 
-  const updateCartQuantity = (id: string, qty: number) => {
+  const updateCartQuantity = (productId: string, size: string, color: string, quantity: number) => {
     setCart((prev) => {
-      if (qty <= 0) {
-        return prev.filter((item) => item.id !== id);
+      if (quantity <= 0) {
+        return prev.filter((item) => 
+          !(item.product.id === productId && item.size === size && item.color === color)
+        );
       }
+      
       return prev.map((item) =>
-        item.id === id ? { ...item, quantity: qty } : item
+        item.product.id === productId && 
+        item.size === size && 
+        item.color === color
+          ? { ...item, quantity }
+          : item
       );
     });
   };
 
-  const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
-  };
+  const clearCart = () => setCart([]);
 
-  const getTotalCartItems = () => {
-    return cart.reduce((total, item) => total + item.quantity, 0);
-  };
+  /* ----------------------------- Sélecteurs ------------------------------ */
 
-  const clearCart = () => {
-    setCart([]);
-  };
+  const getSubtotal = () =>
+    cart.reduce((total, item) => total + parseFloat(item.product.price) * item.quantity, 0);
+
+  const getTotalCartItems = () =>
+    cart.reduce((total, item) => total + item.quantity, 0);
+
+  /* --------------------------- Valeur exposée ---------------------------- */
 
   const value: CartContextType = {
     cart,
     addToCart,
     removeFromCart,
     updateCartQuantity,
-    getTotalPrice,
-    getTotalCartItems,
     clearCart,
+    getSubtotal,
+    getTotalPrice: getSubtotal, // alias
+    getTotalCartItems,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
 
-// ─── Hook ───────────────────────────────────────────────────────────────── 
+/* -------------------------------------------------------------------------- */
+/*                                   Hook                                     */
+/* -------------------------------------------------------------------------- */
+
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {

@@ -81,15 +81,35 @@ export interface Category {
 export interface CartItem {
   product: Product;
   size: string;
+  color: string;
   quantity: number;
 }
+export interface ShippingInfo {
+  email: string;
+  phone: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  district: string;
+  country: string;
+}
 
+export interface PaymentInfo {
+  cardNumber: string;
+  expiryDate: string;
+  cvv: string;
+  cardholderName: string;
+}
 // Type pour les utilisateurs
 export interface User {
   id: string;
-  name: string;
   email: string;
-  avatar?: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  country?: string;
+  sportType?: string;
 }
 
 // Type pour la navigation
@@ -101,23 +121,6 @@ export interface NavigationItem {
     href: string;
     featured?: boolean;
   }[];
-}
-
-// Types pour l'authentification
-export interface RegisterData {
-  first_name: string;
-  last_name: string;
-  email: string;
-  password: string;
-  password_confirmation: string;
-  phone?: string;
-  country?: string;
-  sport_type?: string;
-}
-
-export interface LoginData {
-  email: string;
-  password: string;
 }
 
 // Type pour les réponses API

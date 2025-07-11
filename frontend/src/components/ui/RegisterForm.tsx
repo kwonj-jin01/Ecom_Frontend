@@ -1,8 +1,8 @@
 // components/RegisterForm.tsx
 import React from 'react';
-import { User, Mail, Phone, MapPin, Target } from 'lucide-react';
+import { User, Mail} from 'lucide-react';
 import { InputField } from './InputField';
-import { SelectField } from './SelectField';
+// import { SelectField } from './SelectField';
 import { PasswordInput } from './PasswordInput';
 import { CheckboxField } from './CheckboxField';
 import { Button2 } from './Button2';
@@ -75,7 +75,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       />
 
       {/* Phone & Country */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* <div className="grid grid-cols-2 gap-4">
         <InputField
           label="Phone"
           type="tel"
@@ -93,17 +93,17 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           placeholder="Select"
           icon={MapPin}
         />
-      </div>
+      </div> */}
 
       {/* Sport Type */}
-      <SelectField
+      {/* <SelectField
         label="Primary Sport"
         value={formData.sportType}
         onChange={(value) => onInputChange('sportType', value)}
         options={sportOptions}
         placeholder="Select your sport"
         icon={Target}
-      />
+      /> */}
 
       {/* Password Field */}
       <PasswordInput

@@ -5,6 +5,7 @@ import {
   useEffect,
   ReactNode,
   useCallback,
+  useContext,
 } from 'react';
 import { authAPI } from '../services/api';
 import { AxiosError } from 'axios';
@@ -17,6 +18,7 @@ export interface User {
   avatar?: string;
   firstName?: string;
   lastName?: string;
+  token?: string; // Ajout du token pour l'utilisation dans les requêtes
 }
 
 interface LoginCredentials {
@@ -67,7 +69,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchUser = useCallback(async () => {
     try {
       const { data } = await authAPI.getUser(); // GET /user
-      setUser(data);
+      const token = localStorage.getItem(TOKEN_KEY);
+      setUser({ ...data, token });
     } catch {
       clearSession();
     } finally {
@@ -89,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { data } = await authAPI.login({ email, password });
       localStorage.setItem(TOKEN_KEY, data.token);
-      setUser(data.user);
+      setUser({ ...data.user, token: data.token });
       return { success: true };
     } catch (e) {
       const err = e as AxiosError<{ message: string }>;
@@ -97,7 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  /** ⚠️ Pas d’auto‑login après inscription : on laisse l’UI rediriger vers /login */
+  /** ⚠️ Pas d'auto‑login après inscription : on laisse l'UI rediriger vers /login */
   const register = async (
     {
       firstName,
@@ -146,4 +149,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+/* ───── Hook personnalisé ────────────────────────────────── */
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

@@ -1,5 +1,6 @@
+//api.ts
 import axios from "axios";
-import { LoginData, RegisterData } from "../types";
+import { LoginData, RegisterData } from "../types/auth";
 const API_URL = import.meta.env.VITE_API_URL; // ex. http://127.0.0.1:8000/api
 
 export const api = axios.create({
