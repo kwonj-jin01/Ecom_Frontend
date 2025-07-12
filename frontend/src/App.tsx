@@ -10,6 +10,10 @@ import Header from './components/layout/Header';
 import { FavoriteProvider } from './context/FavoriteContext';
 import ProductDetail from './pages/ProductDetail';
 import Checkout from './pages/Checkout';
+import Orders from './pages/Orders';
+import Profile from './pages/Profile';
+import Favorites from './pages/Favorites';
+import Settings from './pages/Settings';
 
 /*--- Wrapper pour accéder à useLocation() ---*/
 function AppLayout() {
@@ -27,15 +31,24 @@ function AppLayout() {
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
+
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/settings" element={<Settings />} />
+
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetail onBack={() => navigate(-1)} />} />
+
           <Route path="/checkout" element={<Checkout />} />
+
           <Route path="/login" element={<Login />} />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 
-      {/* {!hideLayout && <Footer />} */}
+      {!hideLayout && <Footer />}
     </div>
   );
 }

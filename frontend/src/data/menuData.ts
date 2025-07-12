@@ -28,165 +28,168 @@ export type NavigationCategory = {
   children?: NavigationItem[];
 };
 
-// Données du menu principal
+// ---------------------------------------------------------------------------
+// Données du menu principal (localisées en FR)
+// ---------------------------------------------------------------------------
 export const menuData: MenuData = {
   shop: {
     sections: [
       {
-        title: "Categories",
-        items: [
-          "New Arrivals",
-          "Best Sellers",
-          "Limited Edition",
-        ],
+        title: "Catégories",
+        items: ["Nouveautés", "Meilleures ventes", "Édition limitée"],
       },
       {
         title: "Collections",
         items: [
-          "Spring Collection",
-          "Summer Essentials",
-          "Workout Gear",
+          "Collection printemps",
+          "Essentiels été",
+          "Équipement d’entraînement",
         ],
       },
     ],
-    bottomLinks: ["View All", "Gift Cards", "Size Guide"],
+    bottomLinks: ["Tout voir", "Cartes cadeaux", "Guide des tailles"],
   },
+
   men: {
     sections: [
       {
-        title: "New & Trending",
-        items: ["New Arrivals", "Sale Offer", "Best Sellers"],
+        title: "Nouveautés & Tendances",
+        items: ["Nouveautés", "Offre promotionnelle", "Meilleures ventes"],
       },
       {
-        title: "Shoes",
-        items: ["Basketball", "Running", "Training & Gym"],
+        title: "Chaussures",
+        items: ["Basket-ball", "Running", "Training & Gym"],
       },
       {
-        title: "Clothing",
-        items: ["Tracksuits", "Pants", "Shorts", "Tops & T-Shirts"],
+        title: "Vêtements",
+        items: ["Survêtements", "Pantalons", "Shorts", "T‑shirts & Tops"],
       },
       {
-        title: "Accessories",
-        items: ["Socks", "Sunglasses"],
+        title: "Accessoires",
+        items: ["Chaussettes", "Lunettes de soleil"],
       },
       {
-        title: "SHOP BY SPORT",
-        items: ["Football", "Running", "Soccer", "Tennis"],
+        title: "Par sport",
+        items: ["Football", "Course", "Soccer", "Tennis"],
       },
       {
-        title: "Shop By Color",
-        items: ["University Red", "Electric Blue", "Mint Brown"],
+        title: "Par couleur",
+        items: ["Rouge université", "Bleu électrique", "Marron menthe"],
       },
     ],
     bottomLinks: [
-      "All Men's Clothing",
-      "All Men's Accessories",
-      "All Men's Sport",
+      "Tous les vêtements homme",
+      "Tous les accessoires homme",
+      "Tous les sports homme",
     ],
   },
+
   women: {
     sections: [
       {
-        title: "New & Trending",
-        items: ["New Arrivals", "Best Sellers"],
+        title: "Nouveautés & Tendances",
+        items: ["Nouveautés", "Meilleures ventes"],
       },
       {
-        title: "Shoes",
-        items: ["Basketball", "Jordan", "Training & Gym"],
+        title: "Chaussures",
+        items: ["Basket-ball", "Jordan", "Training & Gym"],
       },
       {
-        title: "Clothing",
-        items: ["Hoodies & Sweatshirts", "Jordan", "Tops & T-Shirts"],
+        title: "Vêtements",
+        items: ["Sweats & Hoodies", "Jordan", "T‑shirts & Tops"],
       },
       {
-        title: "Accessories",
-        items: ["Bags & Backpacks", "Hats & Headwear", "Socks"],
+        title: "Accessoires",
+        items: ["Sacs & Sacs à dos", "Casquettes & Chapeaux", "Chaussettes"],
       },
       {
-        title: "SHOP BY SPORT",
-        items: ["Baseball", "Running", "Yoga"],
+        title: "Par sport",
+        items: ["Baseball", "Course", "Yoga"],
       },
       {
-        title: "Shop By Color",
-        items: ["Elemental Pink", "University Red", "Black And Sail"],
+        title: "Par couleur",
+        items: ["Rose Elemental", "Rouge université", "Noir & Écru"],
       },
     ],
     bottomLinks: [
-      "All Women's Shoes",
-      "All Women's Clothing",
-      "All Women's Sport",
+      "Toutes les chaussures femme",
+      "Tous les vêtements femme",
+      "Tous les sports femme",
     ],
   },
+
   trending: {
     sections: [
       {
-        title: "Hot Right Now",
+        title: "Tendance du moment",
         items: [
-          "Viral TikTok Styles",
-          "Most Shared",
-          "Social Media Hits",
+          "Styles viraux TikTok",
+          "Les plus partagés",
+          "Succès réseaux sociaux",
         ],
       },
       {
-        title: "Seasonal Trends",
+        title: "Tendances saisonnières",
         items: [
-          "Summer Vibes",
-          "Festival Ready",
-          "Beach Wear",
+          "Ambiance estivale",
+          "Prêt pour le festival",
+          "Tenues de plage",
         ],
       },
     ],
-    bottomLinks: ["View All Trending", "Style Guide"],
+    bottomLinks: ["Tout voir : Tendances", "Guide de style"],
   },
 };
 
-// Données de navigation pour le menu mobile
+// ---------------------------------------------------------------------------
+// Données de navigation mobile (localisées en FR)
+// ---------------------------------------------------------------------------
 export const navigation: NavigationCategory[] = [
   {
-    title: "Shop",
+    title: "Boutique",
     children: [
-      { title: "New Arrivals", href: "/new-arrivals" },
-      { title: "Best Sellers", href: "/best-sellers" },
-      { title: "Sale", href: "/sale", featured: true },
+      { title: "Nouveautés", href: "/new-arrivals" },
+      { title: "Meilleures ventes", href: "/best-sellers" },
+      { title: "Promo", href: "/sale", featured: true },
     ],
   },
   {
-    title: "Men",
+    title: "Homme",
     children: [
-      { title: "Shoes", href: "/men/shoes" },
-      { title: "Clothing", href: "/men/clothing" },
-      { title: "Accessories", href: "/men/accessories" },
+      { title: "Chaussures", href: "/men/shoes" },
+      { title: "Vêtements", href: "/men/clothing" },
+      { title: "Accessoires", href: "/men/accessories" },
     ],
   },
   {
-    title: "Women",
+    title: "Femme",
     children: [
-      { title: "Shoes", href: "/women/shoes" },
-      { title: "Clothing", href: "/women/clothing" },
-      { title: "Accessories", href: "/women/accessories" },
+      { title: "Chaussures", href: "/women/shoes" },
+      { title: "Vêtements", href: "/women/clothing" },
+      { title: "Accessoires", href: "/women/accessories" },
     ],
   },
   {
-    title: "Trending",
+    title: "Tendances",
     children: [
-      { title: "Hot Items", href: "/trending/hot" },
-      { title: "New Drops", href: "/trending/new" },
-      { title: "Viral Styles", href: "/trending/viral" },
+      { title: "Articles phares", href: "/trending/hot" },
+      { title: "Nouveaux drops", href: "/trending/new" },
+      { title: "Styles viraux", href: "/trending/viral" },
     ],
   },
   {
-    title: "Seasonal",
+    title: "Saisonnier",
     children: [
-      { title: "Summer Collection", href: "/seasonal/summer" },
-      { title: "Limited Edition", href: "/seasonal/limited" },
+      { title: "Collection été", href: "/seasonal/summer" },
+      { title: "Édition limitée", href: "/seasonal/limited" },
     ],
   },
   {
-    title: "Accessories",
+    title: "Accessoires",
     children: [
-      { title: "Bags", href: "/accessories/bags" },
-      { title: "Hats", href: "/accessories/hats" },
-      { title: "Sunglasses", href: "/accessories/sunglasses" },
+      { title: "Sacs", href: "/accessories/bags" },
+      { title: "Chapeaux", href: "/accessories/hats" },
+      { title: "Lunettes de soleil", href: "/accessories/sunglasses" },
     ],
   },
 ];

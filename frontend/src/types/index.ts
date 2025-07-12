@@ -132,3 +132,120 @@ export interface ApiResponse<T> {
   data?: T;
   message?: string;
 }
+
+// ---------------------------------------------------------------------------
+// Shared TypeScript types for the user‑profile / e‑commerce demo application
+// ---------------------------------------------------------------------------
+
+// --------------------------- Navigation & Layout ---------------------------
+export type PageKey =
+  | "profile"
+  | "orders"
+  | "order-detail"
+  | "favorites"
+  | "settings";
+
+// ------------------------------ Mega‑Menu ----------------------------------
+export interface MenuSection {
+  title: string;
+  items: string[];
+}
+// Types
+export interface Favorite {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  category: string;
+}
+export interface MenuEntry {
+  sections: MenuSection[];
+  bottomLinks?: string[];
+}
+
+export type MenuData = Record<string, MenuEntry>;
+// -------------------------------- Payment ----------------------------------
+
+// --------------------------- Profil / Utilisateur --------------------------
+export interface UserProfile {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  bio: string;
+}
+
+// ------------------------------ Commandes ----------------------------------
+export interface OrderItem {
+  id: string;
+  name: string;
+  color: string;
+  size: string;
+  quantity: number;
+  price: number;
+  total: number;
+  image: string;
+}
+
+export interface OrderSummary {
+  subtotal: number;
+  delivery: number;
+  tax: number;
+  total: number;
+  itemCount: number;
+}
+
+export interface OrderCustomer {
+  name: string;
+  email: string;
+  phone: string;
+  orderCount: number;
+  shippingAddress: string;
+  billingAddress: string;
+}
+
+export interface Order {
+  id: string;
+  date: string;
+  status: string;
+  statusColor: string;
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+    orderCount: number;
+    shippingAddress: string;
+    billingAddress: string;
+  };
+  items: Array<{
+    id: string;
+    name: string;
+    color: string;
+    size: string;
+    quantity: number;
+    price: number;
+    total: number;
+    image: string;
+  }>;
+  summary: {
+    subtotal: number;
+    delivery: number;
+    tax: number;
+    total: number;
+    itemCount: number;
+  };
+  courier: string;
+}
+
+// -------------------------------- Favoris ----------------------------------
+export interface Favorite {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  image: string;
+}
+
+// ---------------------------------------------------------------------------
+// Ajoute d'autres types ici au fur et à mesure que l'application grandit.
+// ---------------------------------------------------------------------------
