@@ -1,6 +1,5 @@
 // Login.tsx
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../hook/useAuth';
 import { navigate } from '../../utils/navigation';
 import { Logo } from '../ui/Logo';
 import { LoginForm } from '../ui/LoginForm';
@@ -10,19 +9,18 @@ import { AuthToggle } from '../ui/AuthToggle';
 import { HeroSection } from '../ui/HeroSection';
 import type { RegisterFormData } from '../../types/auth';
 import { AlertMessage } from '../ui/AlertMessage';
+import { useAuth } from '../../context/AuthContext';
+import { getErrorMessage } from '../../utils/getErrorMessage';
 
 const Login: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<RegisterFormData>({
-    email: '',
-    password: '',
     firstName: '',
     lastName: '',
-    phone: '',
+    email: '',
+    password: '',
     confirmPassword: '',
-    country: '',
-    sportType: '',
     agreeTerms: false,
     newsletter: false
   });
@@ -82,33 +80,7 @@ const Login: React.FC = () => {
     }
   };
 
-  const getErrorMessage = (error: any): string => {
-    if (error.response?.data?.message) {
-      return error.response.data.message;
-    }
-    
-    if (error.response?.data?.errors) {
-      // Laravel validation errors
-      const errors = error.response.data.errors;
-      const firstError = Object.values(errors)[0] as string[];
-      return firstError[0] || 'Validation error';
-    }
-    
-    switch (error.response?.status) {
-      case 400:
-        return 'Invalid data provided. Please check your input.';
-      case 401:
-        return 'Invalid email or password.';
-      case 409:
-        return 'An account with this email already exists.';
-      case 422:
-        return 'Please check your input and try again.';
-      case 500:
-        return 'Server error. Please try again later.';
-      default:
-        return error.message || 'An unexpected error occurred.';
-    }
-  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,33 +93,30 @@ const Login: React.FC = () => {
       validateForm();
 
       if (isLogin) {
-        await login(formData.email, formData.password);
-        setSuccessMessage('Login successful!');
-        setTimeout(() => navigate('/'), 1000);
+       // FIXED: Pass credentials as an object, not separate parameters
+        const result = await login({
+          email: formData.email,
+          password: formData.password
+        });
+
+        // Handle the result properly
+        if (result.success) {
+          setSuccessMessage('Login successful!');
+          setTimeout(() => navigate('/'), 1000);
+        } else {
+          // Display the error message from the login attempt
+          setError(result.error || 'Login failed');
+        }
       } else {
-        console.log('Submitting registration data:', {
+        // FIXED: Pass registration data that matches the expected interface
+        const result = await register({
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-          phone: formData.phone,
           password: formData.password,
-          country: formData.country,
-          sportType: formData.sportType,
-          newsletter: formData.newsletter
         });
 
-        const success = await register(
-          formData.firstName,
-          formData.lastName,
-          formData.email,
-          formData.password,
-          formData.phone || undefined,
-          formData.country || undefined,
-          formData.sportType || undefined,
-          formData.newsletter
-        );
-
-        if (success) {
+        if (result.success) {
           setSuccessMessage('Account created successfully! You can now log in.');
           setTimeout(() => {
             setSuccessMessage('');
@@ -158,14 +127,14 @@ const Login: React.FC = () => {
               password: '',
               firstName: '',
               lastName: '',
-              phone: '',
               confirmPassword: '',
-              country: '',
-              sportType: '',
               agreeTerms: false,
               newsletter: false
             });
           }, 2000);
+        } else {
+          // Display the error message from the registration attempt
+          setError(result.error || 'Registration failed');
         }
       }
     } catch (err) {
@@ -186,10 +155,7 @@ const Login: React.FC = () => {
       password: '',
       firstName: '',
       lastName: '',
-      phone: '',
       confirmPassword: '',
-      country: '',
-      sportType: '',
       agreeTerms: false,
       newsletter: false
     });

@@ -100,6 +100,9 @@ export interface PaymentInfo {
   expiryDate: string;
   cvv: string;
   cardholderName: string;
+  mobileNumber: string;
+  mobileName: string;
+  waveNumber: string;
 }
 // Type pour les utilisateurs
 export interface User {

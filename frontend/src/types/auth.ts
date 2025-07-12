@@ -22,9 +22,6 @@ export interface RegisterData {
   email: string;
   password: string;
   password_confirmation: string;
-  phone?: string | null;
-  country?: string | null;
-  sport_type?: string | null;
   newsletter?: boolean;
 }
 
@@ -36,10 +33,7 @@ export interface LoginFormData {
 export interface RegisterFormData extends LoginFormData {
   firstName: string;
   lastName: string;
-  phone: string;
   confirmPassword: string;
-  country: string;
-  sportType: string;
   agreeTerms: boolean;
   newsletter: boolean;
 }

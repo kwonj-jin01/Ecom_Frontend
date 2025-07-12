@@ -65,7 +65,7 @@ export const fetchAllProducts = async (): Promise<ProcessedProduct[]> => {
       throw new Error("Réponse API invalide");
     }
 
-    console.log("Produits récupérés depuis l'API :", response.data.data);
+    // console.log("Produits récupérés depuis l'API :", response.data.data);
 
     // Traiter les produits
     const processedProducts: ProcessedProduct[] =

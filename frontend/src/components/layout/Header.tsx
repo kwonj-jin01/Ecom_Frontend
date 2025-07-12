@@ -269,6 +269,7 @@ const Header: React.FC = () => {
                 </Link>
               ) : (
                 <div className="relative user-menu-container hidden sm:block">
+                  
                   <button
                     onClick={toggleUserMenu}
                     className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-full transition-colors"

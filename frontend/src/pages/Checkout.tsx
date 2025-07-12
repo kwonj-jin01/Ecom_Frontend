@@ -8,8 +8,14 @@ import { OrderSummary } from "../components/Checkout/OrderSummary";
 import { OrderConfirmation } from "../components/Checkout/OrderConfirmation";
 
 import { useCart } from "../context/CartContext";
-import { useAuth } from "../context/AuthContext"; // Ajout pour récupérer l'utilisateur
 import type { ShippingInfo, PaymentInfo } from "../types";
+import {
+  validateShipping,
+  validatePayment,
+  buildOrderPayload,
+  createOrder,
+} from "../services/orderService";
+import { useAuth } from "../context/useAuth";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Page                                     */
@@ -67,26 +73,9 @@ const Checkout: React.FC = () => {
   /* ---------------------------------------------------------------------- */
   /*                            Helpers formulaire                          */
   /* ---------------------------------------------------------------------- */
-  const isShippingValid = () =>
-    !!(
-      shippingInfo.email &&
-      shippingInfo.phone &&
-      shippingInfo.firstName &&
-      shippingInfo.lastName &&
-      shippingInfo.address &&
-      shippingInfo.city
-    );
-
-  const isPaymentValid = () =>
-    !!(
-      paymentInfo.cardNumber &&
-      paymentInfo.expiryDate &&
-      paymentInfo.cvv &&
-      paymentInfo.cardholderName
-    );
 
   const handleContinueToPayment = () => {
-    if (!isShippingValid()) {
+    if (!validateShipping(shippingInfo)) {
       alert("Veuillez remplir tous les champs obligatoires.");
       return;
     }
@@ -94,11 +83,10 @@ const Checkout: React.FC = () => {
   };
 
   const handlePlaceOrder = async () => {
-    if (!isPaymentValid()) {
+    if (!validatePayment(paymentInfo)) {
       alert("Veuillez remplir toutes les informations de paiement.");
       return;
     }
-
     if (!user) {
       alert("Vous devez être connecté pour passer commande.");
       return;
@@ -107,101 +95,34 @@ const Checkout: React.FC = () => {
     setIsProcessing(true);
 
     try {
-      // Préparer les données de la commande selon le schéma DB
-      const orderData = {
-        // Informations utilisateur
-        user_id: user.id,
+      const payload = buildOrderPayload(
+        user.id,
+        shippingInfo,
+        paymentInfo,
+        cart,
+        { subtotal, deliveryCharge, total },
+        shippingMethod,
+        discountCode || null
+      );
 
-        // Adresse de livraison (concaténée pour shipping_address)
-        shipping_address: `${shippingInfo.address}${shippingInfo.district ? ', ' + shippingInfo.district : ''}`,
-        shipping_city: shippingInfo.city,
-        shipping_country: shippingInfo.country,
-        shipping_zip: shippingInfo.district || null, // Utilisation du district comme code postal
+      const result = await createOrder(payload);
 
-        // Montant total
-        total: total,
-
-        // Status par défaut
-        status: 'en_attente',
-
-        // Articles commandés
-        items: cart.map(item => ({
-          product_id: item.product.id,
-          quantity: item.quantity,
-          size: item.size || null,
-          unit_price: parseFloat(item.product.price),
-          total_price: parseFloat(item.product.price) * item.quantity,
-        })),
-
-        // Informations de paiement
-        payment: {
-          amount: total,
-          method: 'carte',
-          status: 'en_attente',
-        },
-
-        // Informations client (pour référence)
-        customer_info: {
-          email: shippingInfo.email,
-          phone: shippingInfo.phone,
-          firstName: shippingInfo.firstName,
-          lastName: shippingInfo.lastName,
-          cardholderName: paymentInfo.cardholderName,
-        },
-
-        // Métadonnées additionnelles
-        metadata: {
-          shipping_method: shippingMethod,
-          discount_code: discountCode || null,
-          delivery_charge: deliveryCharge,
-          subtotal: subtotal,
-          order_source: "web",
-        }
-      };
-
-      // Appel API pour créer la commande
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`, // Token d'authentification
-        },
-        body: JSON.stringify(orderData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Erreur HTTP: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      // Succès - commande créée
-      console.log('Commande créée avec succès:', result);
-
-      // Sauvegarder les informations de commande
+      console.log("Commande créée:", result);
       setOrderId(result.order.id);
       setOrderNumber(result.order.order_number);
 
-      setIsProcessing(false);
       setOrderPlaced(true);
       setCurrentStep(3);
-
-      // Vider le panier après commande réussie
       clearCart();
-
-    } catch (error) {
-      console.error('Erreur lors de la création de la commande:', error);
+    } catch (err: unknown) {
+      console.error("Erreur commande:", err);
+      if (err instanceof Error) alert(err.message);
+      else alert("Une erreur inattendue s'est produite.");
+    } finally {
       setIsProcessing(false);
-
-      // Gestion des erreurs
-      if (error instanceof Error) {
-        alert(`Erreur lors de la commande: ${error.message}`);
-      } else {
-        alert('Une erreur inattendue s\'est produite. Veuillez réessayer.');
-      }
     }
   };
+
 
   /* ---------------------------------------------------------------------- */
   /*                          Handlers pour cart                            */
@@ -235,6 +156,7 @@ const Checkout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* En‑tête */}
         <header className="mb-8">

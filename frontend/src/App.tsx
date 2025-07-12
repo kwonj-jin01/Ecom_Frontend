@@ -18,7 +18,7 @@ function AppLayout() {
   // routes sans Header/Footer
   const noLayoutRoutes = ['/login', '/register'];
   const hideLayout = noLayoutRoutes.includes(pathname);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -35,7 +35,7 @@ function AppLayout() {
         </Routes>
       </main>
 
-      {!hideLayout && <Footer />}
+      {/* {!hideLayout && <Footer />} */}
     </div>
   );
 }

@@ -2,11 +2,9 @@
 import React from 'react';
 import { User, Mail} from 'lucide-react';
 import { InputField } from './InputField';
-// import { SelectField } from './SelectField';
 import { PasswordInput } from './PasswordInput';
 import { CheckboxField } from './CheckboxField';
 import { Button2 } from './Button2';
-import { SPORT_TYPES, COUNTRIES } from '../../data/index';
 import type { RegisterFormData } from '../../types/auth';
 
 interface RegisterFormProps {
@@ -26,15 +24,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   onTogglePassword,
   onSubmit
 }) => {
-  const countryOptions = COUNTRIES.map(country => ({
-    value: country.code,
-    label: country.name
-  }));
-
-  const sportOptions = SPORT_TYPES.map(sport => ({
-    value: sport,
-    label: sport
-  }));
+ 
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -73,37 +63,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         required
         compact
       />
-
-      {/* Phone & Country */}
-      {/* <div className="grid grid-cols-2 gap-4">
-        <InputField
-          label="Phone"
-          type="tel"
-          placeholder="+1 234 567 890"
-          value={formData.phone}
-          onChange={(value) => onInputChange('phone', value)}
-          icon={Phone}
-          compact
-        />
-        <SelectField
-          label="Country"
-          value={formData.country}
-          onChange={(value) => onInputChange('country', value)}
-          options={countryOptions}
-          placeholder="Select"
-          icon={MapPin}
-        />
-      </div> */}
-
-      {/* Sport Type */}
-      {/* <SelectField
-        label="Primary Sport"
-        value={formData.sportType}
-        onChange={(value) => onInputChange('sportType', value)}
-        options={sportOptions}
-        placeholder="Select your sport"
-        icon={Target}
-      /> */}
 
       {/* Password Field */}
       <PasswordInput
