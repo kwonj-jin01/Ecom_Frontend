@@ -60,7 +60,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* Info Gradient */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4 rounded-b-2xl">
           <div className="text-white">
-            <p className="text-xs text-gray-300 mb-1">{product.category_id}</p>
+            <p className="text-xs text-gray-300 mb-1">{product.category}</p>
             <h3 className="font-medium text-sm mb-2 line-clamp-2">{product.name}</h3>
 
             <div className="flex items-center justify-between">

@@ -4,7 +4,7 @@ import {
   useEffect,
   ReactNode,
   useCallback,
-  useContext,
+  
 } from 'react';
 import { AxiosError } from 'axios';
 import { authAPI } from '../services/api';
@@ -251,13 +251,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-// Hook pour utiliser le contexte
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };

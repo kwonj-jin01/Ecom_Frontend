@@ -2,9 +2,9 @@
 import React from 'react';
 import { Heart, ShoppingBag } from "lucide-react";
 import { Link } from 'react-router-dom';
-import { useCart } from '../../context/CartContext';
 import { useFavorites } from '../../context/FavoriteContext';
 import CartPreview from '../cart/CartPreview';
+import { useCart } from '../../hook/useCart';
 
 
 interface CartButtonProps {

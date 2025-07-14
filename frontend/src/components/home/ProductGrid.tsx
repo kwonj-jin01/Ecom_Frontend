@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { ShoppingBag, Heart, Star } from 'lucide-react';
 import { ProcessedProduct } from '../../types';
-import { useCart } from '../../context/CartContext';
 import Button from '../ui/Button';
 import { useFavorites } from '../../context/FavoriteContext';
+import { useCart } from '../../hook/useCart';
 
 interface ProductGridProps {
   title: string;

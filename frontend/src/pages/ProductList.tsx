@@ -9,15 +9,15 @@ import { ProcessedProduct } from "../types";
 import { fetchAllProducts } from "../data/products";
 import ProductCard from "../components/products/ProductCard";
 import { useFavorites } from '../context/FavoriteContext';
-import { useCart } from '../context/CartContext';
 import LoaderOrError from "../components/ui/LoaderOrError";
+import { useCart } from "../hook/useCart";
 
 type SortOption =
-  | "Featured"
-  | "Newest"
-  | "Price: Low to High"
-  | "Price: High to Low"
-  | "Rating";
+  | "En vedette"
+  | "Nouveautés"
+  | "Prix : croissant"
+  | "Prix : décroissant"
+  | "Note";
 
 /* ---------- CONSTANTES ---------- */
 const filters = [
@@ -39,7 +39,7 @@ const ProductList: React.FC = () => {
   const { favorites, toggleFavorite } = useFavorites();
   const { addToCart } = useCart();
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [sortBy, setSortBy] = React.useState<SortOption>("Featured");
+  const [sortBy, setSortBy] = React.useState<SortOption>("En vedette");
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const [displayCount, setDisplayCount] = useState<number>(6);
   const [selectedSizes, setSelectedSizes] = useState<Set<string>>(new Set());
@@ -85,16 +85,16 @@ const ProductList: React.FC = () => {
     });
 
     switch (sortBy) {
-      case "Newest":
+      case "Nouveautés":
         filtered.sort((a, b) => Number(b.is_new) - Number(a.is_new));
         break;
-      case "Price: Low to High":
+      case "Prix : croissant":
         filtered.sort((a, b) => a.price - b.price);
         break;
-      case "Price: High to Low":
+      case "Prix : décroissant":
         filtered.sort((a, b) => b.price - a.price);
         break;
-      case "Rating":
+      case "Note":
         filtered.sort((a, b) => b.rating - a.rating);
         break;
       default:
@@ -232,8 +232,9 @@ const ProductList: React.FC = () => {
         <main className="flex-1">
           <div className="hidden sm:flex items-center justify-between mb-8">
             <p className="text-gray-600">
-              Showing {displayedProducts.length} of {filteredProducts.length} results
+              Affichage de {displayedProducts.length} sur {filteredProducts.length} résultat{filteredProducts.length > 1 ? "s" : ""}
             </p>
+
 
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">Sort by:</span>
@@ -242,11 +243,11 @@ const ProductList: React.FC = () => {
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
                 className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black"
               >
-                <option>Featured</option>
-                <option>Newest</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Rating</option>
+                <option>En vedette</option>
+                <option>Nouveautés</option>
+                <option>Prix : croissant</option>
+                <option>Prix : décroissant</option>
+                <option>Note</option>
               </select>
             </div>
           </div>

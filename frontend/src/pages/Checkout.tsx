@@ -7,7 +7,6 @@ import { PaymentForm } from "../components/Checkout/PaymentForm";
 import { OrderSummary } from "../components/Checkout/OrderSummary";
 import { OrderConfirmation } from "../components/Checkout/OrderConfirmation";
 
-import { useCart } from "../context/CartContext";
 import type { ShippingInfo, PaymentInfo } from "../types";
 import {
   validateShipping,
@@ -16,6 +15,7 @@ import {
   createOrder,
 } from "../services/orderService";
 import { useAuth } from "../context/useAuth";
+import { useCart } from "../hook/useCart";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Page                                     */

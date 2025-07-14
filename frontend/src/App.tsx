@@ -11,7 +11,6 @@ import { FavoriteProvider } from './context/FavoriteContext';
 import ProductDetail from './pages/ProductDetail';
 import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
-import Profile from './pages/Profile';
 import Favorites from './pages/Favorites';
 import Settings from './pages/Settings';
 
@@ -22,7 +21,7 @@ function AppLayout() {
   // routes sans Header/Footer
   const noLayoutRoutes = ['/login', '/register'];
   const hideLayout = noLayoutRoutes.includes(pathname);
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -32,18 +31,21 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<Home />} />
 
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/settings" element={<Settings />} />
+
+          <Route path="/orders" element={<Orders />} />         {/* Liste des commandes */}
+          <Route path="/favorites" element={<Favorites />} />         {/* Produits favoris */}
+          <Route path="/settings" element={<Settings />} />         {/* Paramètres du compte */}
 
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetail onBack={() => navigate(-1)} />} />
-
+          
+          {/* Validation du panier / paiement */}
           <Route path="/checkout" element={<Checkout />} />
 
+          {/* Authentification */}
           <Route path="/login" element={<Login />} />
 
+          {/* 404 – doit toujours être en dernier */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

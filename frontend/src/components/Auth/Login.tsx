@@ -9,8 +9,8 @@ import { AuthToggle } from '../ui/AuthToggle';
 import { HeroSection } from '../ui/HeroSection';
 import type { RegisterFormData } from '../../types/auth';
 import { AlertMessage } from '../ui/AlertMessage';
-import { useAuth } from '../../context/AuthContext';
 import { getErrorMessage } from '../../utils/getErrorMessage';
+import { useAuth } from '../../hook/useAuth';
 
 const Login: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);

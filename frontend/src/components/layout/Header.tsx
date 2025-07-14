@@ -123,7 +123,7 @@ const Header: React.FC = () => {
               {/* Navigation desktop - cachée sur mobile */}
               <DesktopNavigation 
                 onMouseEnter={handleMouseEnter}
-                menuItems={['shop', 'men', 'women', 'trending'] as (keyof MenuData)[]}
+                menuItems={['boutique', 'hommes', 'femmes', 'tendances'] as (keyof MenuData)[]}
               />
             </div>
 

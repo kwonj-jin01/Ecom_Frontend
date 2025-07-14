@@ -8,7 +8,7 @@ interface TopBannerProps {
 }
 
 const TopBanner: React.FC<TopBannerProps> = ({ 
-  message = "Free shipping on orders over $75\u00A0|\u00A030‑day returns",
+  message = "Livraison gratuite pour les commandes de plus de 45 000 XOF | Retours sous 30 jours",
   backgroundColor = "bg-black",
   textColor = "text-white"
 }) => {

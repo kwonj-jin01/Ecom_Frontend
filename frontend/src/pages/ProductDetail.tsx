@@ -7,7 +7,7 @@ import { fetchProductById } from '../data/products';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ProcessedProduct } from '../types';
 import { useFavorites } from '../context/FavoriteContext';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../hook/useCart';
 
 const mockReviews = [
   {

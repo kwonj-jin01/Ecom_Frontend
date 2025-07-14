@@ -10,10 +10,10 @@ export type MenuCategory = {
 };
 
 export type MenuData = {
-  shop: MenuCategory;
-  men: MenuCategory;
-  women: MenuCategory;
-  trending: MenuCategory;
+  boutique: MenuCategory;
+  hommes: MenuCategory;
+  femmes: MenuCategory;
+  tendances: MenuCategory;
 };
 
 // Type pour la navigation mobile
@@ -32,7 +32,7 @@ export type NavigationCategory = {
 // Données du menu principal (localisées en FR)
 // ---------------------------------------------------------------------------
 export const menuData: MenuData = {
-  shop: {
+  boutique: {
     sections: [
       {
         title: "Catégories",
@@ -50,7 +50,7 @@ export const menuData: MenuData = {
     bottomLinks: ["Tout voir", "Cartes cadeaux", "Guide des tailles"],
   },
 
-  men: {
+  hommes: {
     sections: [
       {
         title: "Nouveautés & Tendances",
@@ -84,7 +84,7 @@ export const menuData: MenuData = {
     ],
   },
 
-  women: {
+  femmes: {
     sections: [
       {
         title: "Nouveautés & Tendances",
@@ -118,7 +118,7 @@ export const menuData: MenuData = {
     ],
   },
 
-  trending: {
+  tendances: {
     sections: [
       {
         title: "Tendance du moment",
@@ -156,25 +156,25 @@ export const navigation: NavigationCategory[] = [
   {
     title: "Homme",
     children: [
-      { title: "Chaussures", href: "/men/shoes" },
-      { title: "Vêtements", href: "/men/clothing" },
-      { title: "Accessoires", href: "/men/accessories" },
+      { title: "Chaussures", href: "/hommes/shoes" },
+      { title: "Vêtements", href: "/hommes/clothing" },
+      { title: "Accessoires", href: "/hommes/accessories" },
     ],
   },
   {
     title: "Femme",
     children: [
-      { title: "Chaussures", href: "/women/shoes" },
-      { title: "Vêtements", href: "/women/clothing" },
-      { title: "Accessoires", href: "/women/accessories" },
+      { title: "Chaussures", href: "/femmes/shoes" },
+      { title: "Vêtements", href: "/femmes/clothing" },
+      { title: "Accessoires", href: "/femmes/accessories" },
     ],
   },
   {
     title: "Tendances",
     children: [
-      { title: "Articles phares", href: "/trending/hot" },
-      { title: "Nouveaux drops", href: "/trending/new" },
-      { title: "Styles viraux", href: "/trending/viral" },
+      { title: "Articles phares", href: "/tendances/hot" },
+      { title: "Nouveaux drops", href: "/tendances/new" },
+      { title: "Styles viraux", href: "/tendances/viral" },
     ],
   },
   {

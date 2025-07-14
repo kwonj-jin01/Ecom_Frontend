@@ -1,6 +1,5 @@
 import  {
   createContext,
-  useContext,
   useState,
   useEffect,
   ReactNode,
@@ -47,7 +46,7 @@ interface CartContextType {
 /*                                 Contexte                                   */
 /* -------------------------------------------------------------------------- */
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+export const CartContext = createContext<CartContextType | undefined>(undefined);
 
 /* -------------------------------------------------------------------------- */
 /*                                 Provider                                   */
@@ -143,14 +142,3 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
 
-/* -------------------------------------------------------------------------- */
-/*                                   Hook                                     */
-/* -------------------------------------------------------------------------- */
-
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart must be used within a CartProvider");
-  }
-  return context;
-};
