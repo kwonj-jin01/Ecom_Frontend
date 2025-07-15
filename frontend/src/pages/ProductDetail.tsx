@@ -8,6 +8,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ProcessedProduct } from '../types';
 import { useFavorites } from '../context/FavoriteContext';
 import { useCart } from '../hook/useCart';
+import { COLOR_HEX } from '../utils/colors';
+import { toast } from "react-hot-toast";   // ou n’importe quelle lib de toasts
+import LoaderOrError from '../components/ui/LoaderOrError';
+import ProductReviews from '../components/shared/ProductReviews';
 
 const mockReviews = [
   {
@@ -15,26 +19,6 @@ const mockReviews = [
     rating: 5,
     comment: "Excellente qualité, taille parfaite. Le tissu est agréable à porter toute la journée."
   },
-  {
-    name: "Claire M.",
-    rating: 4,
-    comment: "Très bon produit mais livraison un peu lente."
-  },
-  {
-    name: "Ali B.",
-    rating: 5,
-    comment: "Top ! Conforme à la description et très confortable."
-  },
-  {
-    name: "Fatou K.",
-    rating: 3,
-    comment: "Bon mais taille un peu petit."
-  },
-  {
-    name: "Yann L.",
-    rating: 5,
-    comment: "Parfait, je recommande à 100%."
-  }
 ];
 
 const ProductDetail: React.FC = () => {
@@ -46,14 +30,13 @@ const ProductDetail: React.FC = () => {
 
   // Product interaction states
   const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string>("");
+
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
   // Review form states
   const [reviews, setReviews] = useState(mockReviews);
-  const [name, setName] = useState("");
-  const [comment, setComment] = useState("");
-  const [rating, setRating] = useState(5);
 
   // Hooks
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -71,9 +54,9 @@ const ProductDetail: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         const found = await fetchProductById(id);
-        
+
         if (found) {
           setProduct(found);
           // Set default size if available
@@ -95,61 +78,57 @@ const ProductDetail: React.FC = () => {
   }, [id]);
 
   // Handlers
-  const handleAddToCart = () => {
-    if (!product) return;
-
-    const cartItem = {
-      ...product,
-      quantity,
-      size: selectedSize
+  const handleAddToCart = (
+    product: ProcessedProduct,
+    size: string | undefined,
+    color: string | undefined,
+    qty: number = 1
+  ) => {
+    const productForCart = {
+      id: product.id,
+      name: product.name,
+      title: product.title,
+      price: product.price.toString(),
+      image: product.thumbnail,
+      thumbnail: product.thumbnail,
+      description: product.description,
+      category: product.category,
     };
 
-    addToCart(cartItem);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !comment.trim()) return;
-
-    const newReview = { name: name.trim(), rating, comment: comment.trim() };
-    setReviews([newReview, ...reviews]);
-    setName("");
-    setComment("");
-    setRating(5);
-  };
-
-  const handleBack = () => {
-    navigate(-1);
-  };
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement du produit...</p>
-        </div>
-      </div>
+    addToCart(
+      productForCart,
+      size && size.trim() ? size : "M",
+      color && color.trim() ? color : "Black",
+      qty
     );
+  };
+
+  if (loading || error || !product) {
+    return <LoaderOrError loading={loading} error={error} />;
   }
 
-  // Error state
-  if (error || !product) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 text-lg mb-4">{error || "Produit introuvable"}</p>
-          <button
-            onClick={handleBack}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Retour aux produits
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const handleCheckout = () => {
+    if (!product) return;
+
+    // 1) Vérifications
+    if (!product.in_stock) {
+      toast.error("Produit en rupture de stock");
+      return;
+    }
+    if (product.sizes?.length > 0 && !selectedSize) {
+      toast.error("Veuillez choisir une taille");
+      return;
+    }
+    if (product.colors?.length > 0 && !selectedColor) {
+      toast.error("Veuillez choisir une couleur");
+      return;
+    }
+
+    // 2) Ajout (optionnel) au panier
+    handleAddToCart(product, selectedSize, selectedColor, quantity);
+    // Rediriger vers la page checkout
+    navigate('/checkout');
+  };
 
   // Check if product is in favorites
   const isProductFavorite = isFavorite(product.id);
@@ -159,11 +138,11 @@ const ProductDetail: React.FC = () => {
       {/* Breadcrumb */}
       <nav className="bg-white px-6 py-3 text-sm text-gray-600 border-b">
         <div className="max-w-7xl mx-auto flex items-center gap-2">
-          <button onClick={handleBack} className="text-blue-600 hover:underline">
+          <button onClick={() => navigate(-1)} className="text-blue-600 hover:underline">
             ← Retour aux produits
           </button>
           <span>›</span>
-          <span>Accueil › Mode {product.gender} › {product.category} › {product.name}</span>
+          <span> Mode {product.gender} › {product.category} › {product.name}</span>
         </div>
       </nav>
 
@@ -195,7 +174,7 @@ const ProductDetail: React.FC = () => {
                   </span>
                 )}
               </div>
-              
+
               {/* Image principale */}
               <img
                 src={product.images[selectedImage] || product.image}
@@ -205,7 +184,7 @@ const ProductDetail: React.FC = () => {
                   e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Non+Disponible';
                 }}
               />
-              
+
               {/* Favorite Button */}
               <button
                 onClick={(e) => {
@@ -258,9 +237,9 @@ const ProductDetail: React.FC = () => {
               <div className="flex items-center">
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className={`w-4 h-4 ${i < Math.floor(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${i < Math.floor(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
                     />
                   ))}
                 </div>
@@ -272,6 +251,35 @@ const ProductDetail: React.FC = () => {
                 {product.in_stock ? 'En stock' : 'Rupture de stock'}
               </span>
             </div>
+
+            {/* Sélection de couleur */}
+            {product.colors && product.colors.length > 0 && (
+              <div className="space-y-1">
+                <span className="font-semibold text-gray-900">Choisir une couleur:</span>
+
+                <div className="flex gap-3">
+                  {product.colors.map((color) => (
+                    <button
+                      key={color}
+                      aria-label={color}
+                      onClick={() => setSelectedColor(color)}
+                      className={`relative w-10 h-10 rounded-full border-2 transition
+                          ${selectedColor === color
+                          ? "border-blue-500 ring-2 ring-blue-200"
+                          : "border-gray-300 hover:border-gray-400"}
+                        `}
+                      style={{ backgroundColor: COLOR_HEX[color] ?? "#000000" }}
+                    >
+                      {selectedColor === color && (
+                        <span className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Sélection de taille */}
             {product.sizes && product.sizes.length > 0 && (
@@ -361,6 +369,13 @@ const ProductDetail: React.FC = () => {
                   )}
                 </div>
 
+                {selectedColor && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">Couleur sélectionnée :</span>
+                    <span className="font-medium text-gray-900">{selectedColor}</span>
+                  </div>
+                )}
+
                 {/* Taille et quantité */}
                 <div className="space-y-3">
                   {selectedSize && (
@@ -397,23 +412,38 @@ const ProductDetail: React.FC = () => {
                   </div>
                 </div>
 
+
                 {/* Boutons */}
                 <div className="space-y-3">
                   <button
-                    disabled={!product.in_stock}
+                    onClick={handleCheckout}
+                    disabled={
+                      !product.in_stock ||
+                      (product.sizes?.length > 0 && !selectedSize) ||
+                      (product.colors?.length > 0 && !selectedColor)
+                    }
                     className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-2"
                   >
                     <ShoppingCart className="w-5 h-5" />
                     Acheter maintenant
                   </button>
 
+
                   <button
-                    onClick={handleAddToCart}
-                    disabled={!product.in_stock}
+                    onClick={() =>
+                      product && handleAddToCart(product, selectedSize, selectedColor)
+                    }
+                    disabled={
+                      !product.in_stock ||
+                      (product.sizes?.length > 0 && !selectedSize) ||
+                      (product.colors?.length > 0 && !selectedColor)
+                    }
                     className="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 transition-colors"
                   >
                     Ajouter au panier
                   </button>
+
+
                 </div>
 
                 {/* Actions vendeur */}
@@ -455,99 +485,11 @@ const ProductDetail: React.FC = () => {
         </div>
 
         {/* Reviews Section */}
-        <div className="mt-12 bg-white p-6 rounded-xl border shadow-lg">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Avis des clients</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Note globale + histogramme */}
-            <div>
-              <div className="flex items-center gap-4 mb-4">
-                <span className="text-4xl font-bold text-gray-900">{product.rating}</span>
-                <div>
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-gray-600 mt-1">Basé sur 238 avis</p>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                {[5, 4, 3, 2, 1].map((rating, idx) => (
-                  <div key={rating} className="flex items-center gap-3">
-                    <span className="text-sm w-4">{rating}</span>
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    <div className="flex-1 bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-yellow-400 h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${[90, 70, 15, 8, 2][idx]}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm text-gray-600 w-8">{[214, 166, 36, 19, 5][idx]}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Liste des commentaires */}
-            <div className="space-y-4 max-h-72 overflow-y-auto pr-2">
-              {reviews.map((review, idx) => (
-                <div key={idx} className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex">
-                      {[...Array(review.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
-                    <span className="text-sm font-medium">{review.name}</span>
-                  </div>
-                  <p className="text-sm text-gray-700">{review.comment}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Formulaire pour ajouter un commentaire */}
-          <div className="mt-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Laisser un avis</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Votre nom"
-                className="w-full border border-gray-300 p-2 rounded-lg"
-                required
-              />
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Votre commentaire"
-                className="w-full border border-gray-300 p-2 rounded-lg"
-                rows={3}
-                required
-              />
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Note:</span>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star 
-                    key={star} 
-                    className={`w-5 h-5 cursor-pointer transition-colors ${
-                      star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400 hover:text-yellow-400'
-                    }`}
-                    onClick={() => setRating(star)}
-                  />
-                ))}
-              </div>
-              <button
-                type="submit"
-                className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors"
-              >
-                Envoyer l'avis
-              </button>
-            </form>
-          </div>
-        </div>
+        <ProductReviews
+          rating={product.rating}
+          reviews={reviews}
+          onSubmit={(review) => setReviews([review, ...reviews])}
+        />
       </div>
     </div>
   );

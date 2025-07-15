@@ -20,17 +20,18 @@ const Hero: React.FC = () => {
   const testimonials = [
     {
       avatar: "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100",
-      text: "Stay cozy without compromising your range of motion. Our women's winter wear is perfect for those chilly outdoor workouts."
+      text: "Restez bien au chaud sans compromettre votre liberté de mouvement. Nos vêtements d'hiver pour femmes sont parfaits pour les entraînements en extérieur par temps froid."
     },
     {
       avatar: "https://images.pexels.com/photos/414029/pexels-photo-414029.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100",
-      text: "Incredible quality and comfort. These pieces have transformed my workout routine completely."
+      text: "Qualité et confort incroyables. Ces articles ont complètement transformé ma routine sportive."
     },
     {
       avatar: "https://images.pexels.com/photos/416778/pexels-photo-416778.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100",
-      text: "Perfect fit and style. Finally found gear that keeps up with my active lifestyle."
+      text: "Coupe et style parfaits. J’ai enfin trouvé des vêtements à la hauteur de mon mode de vie actif."
     }
   ];
+
   return (
     <div >
       {/* Main Content */}

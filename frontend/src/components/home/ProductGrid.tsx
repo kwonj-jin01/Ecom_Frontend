@@ -1,18 +1,17 @@
 // components/home/ProductGrid.tsx
 import React, { useState } from 'react';
-import { ShoppingBag, Heart, Star } from 'lucide-react';
+import { Heart, Star } from 'lucide-react';
 import { ProcessedProduct } from '../../types';
-import Button from '../ui/Button';
 import { useFavorites } from '../../context/FavoriteContext';
 import { useCart } from '../../hook/useCart';
+import QuickViewModal from '../ui/QuickViewModal';
 
 interface ProductGridProps {
   title: string;
   products: ProcessedProduct[];
 }
 
-// Centralise les tailles disponibles
-const SIZES = ['XS', 'S', 'M', 'L', 'XL'];
+
 
 const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
   // ─── Contexts ────────────────────────────────────────────────────────────
@@ -21,21 +20,28 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
 
   // ─── States ─────────────────────────────────────────────────────────────
   const [quickViewProduct, setQuickViewProduct] = useState<ProcessedProduct | null>(null);
-  const [selectedSize, setSelectedSize] = useState<string>('M');
 
   // ─── Handlers ───────────────────────────────────────────────────────────
   const handleQuickView = (product: ProcessedProduct) => {
     setQuickViewProduct(product);
-    setSelectedSize('M');
   };
 
   const closeQuickView = () => setQuickViewProduct(null);
 
-  const handleAddToCart = () => {
-    if (quickViewProduct) {
-      addToCart(quickViewProduct);
-      closeQuickView();
-    }
+  const handleAddToCart = (product: ProcessedProduct, size: string, color: string) => {
+    // Convert ProcessedProduct to Product format expected by CartContext
+    const productForCart = {
+      id: product.id,
+      name: product.name,
+      title: product.title,
+      price: product.price.toString(), // Convert number to string
+      image: product.thumbnail,
+      thumbnail: product.thumbnail,
+      description: product.description,
+      category: product.category,
+    };
+
+    addToCart(productForCart, size, color);
   };
 
   // Early return if no products
@@ -65,7 +71,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
       `}</style>
 
       {/* Header */}
-      <div className="max-w-6xl mx-auto mb-12">
+      <div className="max-w-6xl mx-auto mb-6">
         <div className="mb-3 flex items-center gap-4">
           <h2 className="text-4xl font-bold italic leading-tight">{title}.</h2>
           <div className="w-full h-1 bg-green-500 rounded-full mt-5"></div>
@@ -177,127 +183,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({ title, products }) => {
       </div>
 
       {/* Quick View Modal */}
-      {quickViewProduct && (
-        <div className="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            {/* Overlay */}
-            <div
-              className="fixed inset-0 bg-gray-500/75 transition-opacity"
-              onClick={closeQuickView}
-            />
-
-            {/* Contenu */}
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl w-full">
-              <div className="flex flex-col md:flex-row">
-                {/* Image */}
-                <div className="md:w-1/2 bg-gray-100">
-                  <img
-                    src={quickViewProduct.thumbnail}
-                    alt={quickViewProduct.name}
-                    className="w-full h-full object-cover object-center"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = quickViewProduct.thumbnail;
-                    }}
-                  />
-                </div>
-
-                {/* Détails */}
-                <div className="md:w-1/2 p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-xl font-medium" id="modal-title">
-                        {quickViewProduct.title}
-                      </h3>
-                      <p className="text-sm text-gray-500 mb-2">{quickViewProduct.brand}</p>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-lg font-medium">${quickViewProduct.price.toFixed(2)}</span>
-                        {quickViewProduct.is_on_sale && (
-                          <span className="text-sm text-gray-500 line-through">
-                            ${quickViewProduct.original_price.toFixed(2)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm text-gray-600">{quickViewProduct.rating}</span>
-                      </div>
-                    </div>
-                    <button onClick={closeQuickView} className="text-gray-400 hover:text-gray-500">
-                      <span className="sr-only">Close</span>
-                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  {/* Description */}
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-700">{quickViewProduct.description}</p>
-                  </div>
-
-                  {/* Promotion */}
-                  {quickViewProduct.promotion && (
-                    <div className="mb-4 p-3 bg-green-50 rounded">
-                      <p className="text-sm text-green-800">{quickViewProduct.promotion}</p>
-                    </div>
-                  )}
-
-                  {/* Tailles */}
-                  <div className="mb-6">
-                    <h4 className="text-sm font-medium mb-2">Size</h4>
-                    <div className="grid grid-cols-5 gap-2">
-                      {SIZES.map((size) => (
-                        <button
-                          key={size}
-                          onClick={() => setSelectedSize(size)}
-                          className={`py-2 border text-sm ${selectedSize === size
-                              ? 'border-black bg-black text-white'
-                              : 'border-gray-300 hover:border-gray-700'
-                            }`}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Stock info */}
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-600">
-                      {quickViewProduct.in_stock
-                        ? `${quickViewProduct.stock} in stock`
-                        : 'Out of stock'
-                      }
-                    </p>
-                  </div>
-
-                  {/* Ajouter au panier */}
-                  <div className="mb-4">
-                    <Button
-                      onClick={handleAddToCart}
-                      fullWidth
-                      size="lg"
-                      className="flex items-center justify-center gap-2"
-                      disabled={!quickViewProduct.in_stock}
-                    >
-                      <ShoppingBag size={18} />
-                      {quickViewProduct.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
-                    </Button>
-                  </div>
-
-                  {/* Lien détails */}
-                  <div className="text-center">
-                    <a href={`/products/${quickViewProduct.id}`} className="text-sm font-medium underline">
-                      View full details
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <QuickViewModal
+        product={quickViewProduct}
+        isOpen={!!quickViewProduct}
+        onClose={closeQuickView}
+        onAddToCart={handleAddToCart}
+      />
     </section>
   );
 };

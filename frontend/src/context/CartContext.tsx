@@ -1,4 +1,4 @@
-import  {
+import {
   createContext,
   useState,
   useEffect,
@@ -31,7 +31,8 @@ interface CartContextType {
   cart: CartItem[];
 
   /* Actions */
-  addToCart: (product: Product, size: string, color: string) => void;
+  addToCart: (product: Product, size: string, color: string, quantity?: number       // ← ici : param. facultatif
+  ) => void;
   removeFromCart: (productId: string, size: string, color: string) => void;
   updateCartQuantity: (productId: string, size: string, color: string, quantity: number) => void;
   clearCart: () => void;
@@ -70,30 +71,30 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   /* ------------------------------ Actions --------------------------------- */
 
-  const addToCart = (product: Product, size: string, color: string) => {
+  const addToCart = (product: Product, size: string, color: string, quantity: number = 1) => {
     setCart((prev) => {
-      const existing = prev.find((item) => 
-        item.product.id === product.id && 
-        item.size === size && 
+      const existing = prev.find((item) =>
+        item.product.id === product.id &&
+        item.size === size &&
         item.color === color
       );
-      
+
       if (existing) {
         return prev.map((item) =>
-          item.product.id === product.id && 
-          item.size === size && 
-          item.color === color
-            ? { ...item, quantity: item.quantity + 1 }
+          item.product.id === product.id &&
+            item.size === size &&
+            item.color === color
+            ? { ...item, quantity: item.quantity + quantity } // ← +qty
             : item
         );
       }
-      
-      return [...prev, { product, quantity: 1, size, color }];
+
+      return [...prev, { product, quantity, size, color }];
     });
   };
 
   const removeFromCart = (productId: string, size: string, color: string) => {
-    setCart((prev) => prev.filter((item) => 
+    setCart((prev) => prev.filter((item) =>
       !(item.product.id === productId && item.size === size && item.color === color)
     ));
   };
@@ -101,15 +102,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const updateCartQuantity = (productId: string, size: string, color: string, quantity: number) => {
     setCart((prev) => {
       if (quantity <= 0) {
-        return prev.filter((item) => 
+        return prev.filter((item) =>
           !(item.product.id === productId && item.size === size && item.color === color)
         );
       }
-      
+
       return prev.map((item) =>
-        item.product.id === productId && 
-        item.size === size && 
-        item.color === color
+        item.product.id === productId &&
+          item.size === size &&
+          item.color === color
           ? { ...item, quantity }
           : item
       );

@@ -49,14 +49,15 @@ const Home: React.FC = () => {
       <Hero />
       <CollectionSection />
       {newArrivals.length > 0 && (
-        <ProductGrid title="NEW ARRIVALS" products={newArrivals} />
+        <ProductGrid title="NOUVELLES SORTIES" products={newArrivals} />
       )}
       {bestSellers.length > 0 && (
-        <ProductGrid title="BEST SELLERS" products={bestSellers} />
+        <ProductGrid title="MEILLEURES VENTES" products={bestSellers} />
       )}
       {onSaleProducts.length > 0 && (
-        <ProductGrid title="ON SALE" products={onSaleProducts} />
+        <ProductGrid title="EN PROMOTION" products={onSaleProducts} />
       )}
+
       <ComingSoonCollection />
       <PromoSection />
     </div>

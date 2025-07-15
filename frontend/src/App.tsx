@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Footer from './components/layout/Footer';
 import Home from './pages/Home';
 import ProductList from './pages/ProductList';
@@ -21,7 +21,6 @@ function AppLayout() {
   // routes sans Header/Footer
   const noLayoutRoutes = ['/login', '/register'];
   const hideLayout = noLayoutRoutes.includes(pathname);
-  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -33,12 +32,12 @@ function AppLayout() {
 
 
           <Route path="/orders" element={<Orders />} />         {/* Liste des commandes */}
-          <Route path="/favorites" element={<Favorites />} />         {/* Produits favoris */}
-          <Route path="/settings" element={<Settings />} />         {/* Paramètres du compte */}
+          <Route path="/favorites" element={<Favorites />} />   {/* Produits favoris */}
+          <Route path="/settings" element={<Settings />} />     {/* Paramètres du compte */}
 
           <Route path="/products" element={<ProductList />} />
-          <Route path="/products/:id" element={<ProductDetail onBack={() => navigate(-1)} />} />
-          
+          <Route path="/products/:id" element={<ProductDetail />} />
+
           {/* Validation du panier / paiement */}
           <Route path="/checkout" element={<Checkout />} />
 

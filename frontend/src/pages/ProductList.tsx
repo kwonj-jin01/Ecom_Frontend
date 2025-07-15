@@ -10,6 +10,7 @@ import { fetchAllProducts } from "../data/products";
 import ProductCard from "../components/products/ProductCard";
 import { useFavorites } from '../context/FavoriteContext';
 import LoaderOrError from "../components/ui/LoaderOrError";
+import QuickViewModal from "../components/ui/QuickViewModal";
 import { useCart } from "../hook/useCart";
 
 type SortOption =
@@ -41,12 +42,13 @@ const ProductList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [sortBy, setSortBy] = React.useState<SortOption>("En vedette");
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
-  const [displayCount, setDisplayCount] = useState<number>(6);
+  const [displayCount, setDisplayCount] = useState<number>(9);
   const [selectedSizes, setSelectedSizes] = useState<Set<string>>(new Set());
   const [priceRange, setPriceRange] = useState<number>(200000);
   const [products, setProducts] = useState<ProcessedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [quickViewProduct, setQuickViewProduct] = useState<ProcessedProduct | null>(null);
 
   useEffect(() => {
     document.title = 'FITIX - Global B2B Marketplace';
@@ -69,15 +71,14 @@ const ProductList: React.FC = () => {
     loadProducts();
   }, []);
 
-
-
   // Filtered and sorted products
   /* ---------- MÉMOS ---------- */
   const filteredProducts = useMemo<ProcessedProduct[]>(() => {
     const filtered = products.filter((p) => {
       const category = selectedFilter === "All" ||
         p.category === selectedFilter ||
-        p.category.toLowerCase().includes(selectedFilter.toLowerCase()); const search = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+        p.category.toLowerCase().includes(selectedFilter.toLowerCase());
+      const search = p.name.toLowerCase().includes(searchTerm.toLowerCase());
       // Fix: Vérifier si le produit a des tailles disponibles ou si aucune taille n'est sélectionnée
       const size = selectedSizes.size === 0 || true; // Temporairement simplifié
       const price = p.price <= priceRange;
@@ -106,8 +107,24 @@ const ProductList: React.FC = () => {
 
   const displayedProducts = filteredProducts.slice(0, displayCount);
 
-  const handleAddToCart = (product: ProcessedProduct) => {
-    addToCart(product);
+  const handleAddToCart = (product: ProcessedProduct, size: string = 'M', color: string = 'Black') => {
+    // Convert ProcessedProduct to Product format expected by CartContext
+    const productForCart = {
+      id: product.id,
+      name: product.name,
+      title: product.title,
+      price: product.price.toString(), // Convert number to string
+      image: product.thumbnail,
+      thumbnail: product.thumbnail,
+      description: product.description,
+      category: product.category,
+    };
+
+    addToCart(productForCart, size, color);
+  };
+
+  const handleQuickViewAddToCart = (product: ProcessedProduct, size: string, color: string) => {
+    handleAddToCart(product, size, color);
   };
 
   const toggleSize = (size: string) =>
@@ -129,7 +146,6 @@ const ProductList: React.FC = () => {
   if (loading || error) {
     return <LoaderOrError loading={loading} error={error} />;
   }
-
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
@@ -219,9 +235,10 @@ const ProductList: React.FC = () => {
                     className="w-full"
                   />
                   <div className="flex justify-between text-sm text-gray-500">
-                    <span>$0</span>
-                    <span>${priceRange}+</span>
+                    <span>0 FCFA</span>
+                    <span>{priceRange.toLocaleString()} FCFA</span>
                   </div>
+
                 </div>
               </div>
             </div>
@@ -234,7 +251,6 @@ const ProductList: React.FC = () => {
             <p className="text-gray-600">
               Affichage de {displayedProducts.length} sur {filteredProducts.length} résultat{filteredProducts.length > 1 ? "s" : ""}
             </p>
-
 
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">Sort by:</span>
@@ -267,7 +283,7 @@ const ProductList: React.FC = () => {
                 key={product.id}
                 product={product}
                 onToggleFavorite={() => toggleFavorite(product.id)}
-                onAddToCart={() => handleAddToCart(product)}
+                onAddToCart={() => setQuickViewProduct(product)}
                 isFavorite={favorites.has(product.id)}
               />
             ))}
@@ -303,6 +319,14 @@ const ProductList: React.FC = () => {
           )}
         </main>
       </div>
+
+      {/* Quick View Modal */}
+      <QuickViewModal
+        product={quickViewProduct}
+        isOpen={!!quickViewProduct}
+        onClose={() => setQuickViewProduct(null)}
+        onAddToCart={handleQuickViewAddToCart}
+      />
     </div>
   );
 };
